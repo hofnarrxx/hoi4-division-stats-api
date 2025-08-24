@@ -1,0 +1,201 @@
+package com.hofnarrxx.hoi4_unit_stats_api.parser;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+public class Unit {
+    private String name;
+    private String id;
+    private ArrayList<String> type;
+    private String group;
+    private double combatWidth;
+    private double hp;
+    private double org;
+    private double recoveryRate;
+    private int manpower;
+    private int trainingTime;
+    private double suppression;
+    private double weight;
+    private double supplyConsumption;
+    private double expLoss;
+    private double reliability;
+    private double recon;
+    private double initiative;
+    private double entrenchment;
+    private double equipmentCapture;
+    private Map<String, Integer> equipment;
+    private Map<TerrainType, TerrainModifier> terrainModifiers;
+
+    public Unit(String name) {
+        this.name = name;
+        this.type = new ArrayList<>();
+        this.equipment = new HashMap<>();
+        this.terrainModifiers = new HashMap<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public ArrayList<String> getType() {
+        return type;
+    }
+
+    public void setType(ArrayList<String> type) {
+        this.type = type;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public double getCombatWidth() {
+        return combatWidth;
+    }
+
+    public void setCombatWidth(double combatWidth) {
+        this.combatWidth = combatWidth;
+    }
+
+    public double getHp() {
+        return hp;
+    }
+
+    public void setHp(double hp) {
+        this.hp = hp;
+    }
+
+    public double getOrg() {
+        return org;
+    }
+
+    public void setOrg(double org) {
+        this.org = org;
+    }
+
+    public double getRecoveryRate() {
+        return recoveryRate;
+    }
+
+    public void setRecoveryRate(double recoveryRate) {
+        this.recoveryRate = recoveryRate;
+    }
+
+    public int getManpower() {
+        return manpower;
+    }
+
+    public void setManpower(int manpower) {
+        this.manpower = manpower;
+    }
+
+    public int getTrainingTime() {
+        return trainingTime;
+    }
+
+    public void setTrainingTime(int trainingTime) {
+        this.trainingTime = trainingTime;
+    }
+
+    public double getSuppression() {
+        return suppression;
+    }
+
+    public void setSuppression(double suppression) {
+        this.suppression = suppression;
+    }
+
+    public double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(double weight) {
+        this.weight = weight;
+    }
+
+    public double getSupplyConsumption() {
+        return supplyConsumption;
+    }
+
+    public void setSupplyConsumption(double supplyConsumption) {
+        this.supplyConsumption = supplyConsumption;
+    }
+
+    public double getExpLoss() {
+        return expLoss;
+    }
+
+    public void setExpLoss(double expLoss) {
+        this.expLoss = expLoss;
+    }
+
+    public double getReliability() {
+        return reliability;
+    }
+
+    public void setReliability(double reliability) {
+        this.reliability = reliability;
+    }
+
+    public double getRecon() {
+        return recon;
+    }
+
+    public void setRecon(double recon) {
+        this.recon = recon;
+    }
+
+    public double getInitiative() {
+        return initiative;
+    }
+
+    public void setInitiative(double initiative) {
+        this.initiative = initiative;
+    }
+
+    public double getEntrenchment() {
+        return entrenchment;
+    }
+
+    public void setEntrenchment(double entrenchment) {
+        this.entrenchment = entrenchment;
+    }
+
+    public double getEquipmentCapture() {
+        return equipmentCapture;
+    }
+
+    public void setEquipmentCapture(double equipmentCapture) {
+        this.equipmentCapture = equipmentCapture;
+    }
+
+    public void addEquipment(String equipment, int amount) {
+        this.equipment.put(equipment, amount);
+    }
+
+    public void addTerrainModifier(TerrainType terrainType, TerrainModifier terrainModifier) {
+        this.terrainModifiers.put(terrainType, terrainModifier);
+    }
+
+    @Override
+    public String toString() {
+        return name + ", " + id + ", " + hp + ", " + org + ", " + equipment + ", " + terrainModifiers;
+    }
+}
