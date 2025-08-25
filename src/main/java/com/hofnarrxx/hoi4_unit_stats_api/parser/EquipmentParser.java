@@ -4,6 +4,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class EquipmentParser {
     public static List<Equipment> parseEquipments(String input) {
         List<Equipment> equipmentList = new ArrayList<>();

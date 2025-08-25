@@ -30,64 +30,52 @@ public class Equipment {
         this.type = new ArrayList<>();
     }
 
+    public String getId() {
+        return id;
+    }
+
     public void setId(String id) {
         this.id = id;
+    }
+
+    public int getYear() {
+        return year;
     }
 
     public void setYear(int year) {
         this.year = year;
     }
 
+    public ArrayList<String> getType() {
+        return type;
+    }
+
+    public void setType(ArrayList<String> type) {
+        this.type = type;
+    }
+
+    public double getReliability() {
+        return reliability;
+    }
+
     public void setReliability(double reliability) {
         this.reliability = reliability;
+    }
+
+    public double getMaximumSpeed() {
+        return maximumSpeed;
     }
 
     public void setMaximumSpeed(double maximumSpeed) {
         this.maximumSpeed = maximumSpeed;
     }
 
-    public void setDefense(double defense) {
-        this.defense = defense;
-    }
-
-    public void setBreakthrough(double breakthrough) {
-        this.breakthrough = breakthrough;
-    }
-
-    public void setHardness(double hardness) {
-        this.hardness = hardness;
-    }
-
-    public void setArmorValue(double armorValue) {
-        this.armorValue = armorValue;
-    }
-
-    public void setSoftAttack(double softAttack) {
-        this.softAttack = softAttack;
-    }
-
-    public void setHardAttack(double hardAttack) {
-        this.hardAttack = hardAttack;
-    }
-
-    public void setApAttack(double apAttack) {
-        this.apAttack = apAttack;
-    }
-
-    public void setAirAttack(double airAttack) {
-        this.airAttack = airAttack;
+    public double getBuildCostIc() {
+        return buildCostIc;
     }
 
     public void setBuildCostIc(double buildCostIc) {
         this.buildCostIc = buildCostIc;
-    }
-
-    public void addType(String type) {
-        this.type.add(type);
-    }
-
-    public void setType(ArrayList<String> types) {
-        this.type = types;
     }
 
     public double getFuelConsumption() {
@@ -98,10 +86,73 @@ public class Equipment {
         this.fuelConsumption = fuelConsumption;
     }
 
+    public double getDefense() {
+        return defense;
+    }
+
+    public void setDefense(double defense) {
+        this.defense = defense;
+    }
+
+    public double getBreakthrough() {
+        return breakthrough;
+    }
+
+    public void setBreakthrough(double breakthrough) {
+        this.breakthrough = breakthrough;
+    }
+
+    public double getHardness() {
+        return hardness;
+    }
+
+    public void setHardness(double hardness) {
+        this.hardness = hardness;
+    }
+
+    public double getArmorValue() {
+        return armorValue;
+    }
+
+    public void setArmorValue(double armorValue) {
+        this.armorValue = armorValue;
+    }
+
+    public double getSoftAttack() {
+        return softAttack;
+    }
+
+    public void setSoftAttack(double softAttack) {
+        this.softAttack = softAttack;
+    }
+
+    public double getHardAttack() {
+        return hardAttack;
+    }
+
+    public void setHardAttack(double hardAttack) {
+        this.hardAttack = hardAttack;
+    }
+
+    public double getApAttack() {
+        return apAttack;
+    }
+
+    public void setApAttack(double apAttack) {
+        this.apAttack = apAttack;
+    }
+
+    public double getAirAttack() {
+        return airAttack;
+    }
+
+    public void setAirAttack(double airAttack) {
+        this.airAttack = airAttack;
+    }
+
     @Override
     public String toString() {
-        return "InfantryEquipment{" +
-                "id='" + id + '\'' +
+        return "id='" + id + '\'' +
                 ", year=" + year +
                 ", defense=" + defense +
                 ", softAttack=" + softAttack +
