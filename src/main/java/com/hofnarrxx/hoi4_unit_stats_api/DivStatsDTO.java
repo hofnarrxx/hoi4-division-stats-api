@@ -1,14 +1,12 @@
-package com.hofnarrxx.hoi4_unit_stats_api.parser;
+package com.hofnarrxx.hoi4_unit_stats_api;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Unit {
-    private String name;
-    private String id; //abbreviation
-    private ArrayList<String> type;
-    private String group;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainModifier;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainType;
+
+public class DivStatsDTO {
     private double combatWidth;
     private double hp;
     private double org;
@@ -27,43 +25,22 @@ public class Unit {
     private Map<String, Integer> equipment;
     private Map<TerrainType, TerrainModifier> terrainModifiers;
 
-    public Unit(String name) {
-        this.name = name;
-        this.type = new ArrayList<>();
+    // private double reliability;
+    private double maximumSpeed;
+    private double buildCostIc;
+    private double fuelConsumption;
+    private double defense;
+    private double breakthrough;
+    private double hardness;
+    private double armorValue;
+    private double softAttack;
+    private double hardAttack;
+    private double apAttack;
+    private double airAttack;
+
+    public DivStatsDTO() {
         this.equipment = new HashMap<>();
         this.terrainModifiers = new HashMap<>();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public ArrayList<String> getType() {
-        return type;
-    }
-
-    public void setType(ArrayList<String> type) {
-        this.type = type;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
     }
 
     public double getCombatWidth() {
@@ -186,24 +163,107 @@ public class Unit {
         this.equipmentCapture = equipmentCapture;
     }
 
-    public Map<String, Integer> getEquipment(){
+    public Map<String, Integer> getEquipment() {
         return equipment;
     }
 
-    public void addEquipment(String equipment, int amount) {
-        this.equipment.put(equipment, amount);
+    public void setEquipment(Map<String, Integer> equipment) {
+        this.equipment = equipment;
     }
 
-    public Map<TerrainType, TerrainModifier> getTerrainModifiers(){
+    public Map<TerrainType, TerrainModifier> getTerrainModifiers() {
         return terrainModifiers;
     }
 
-    public void addTerrainModifier(TerrainType terrainType, TerrainModifier terrainModifier) {
-        this.terrainModifiers.put(terrainType, terrainModifier);
+    public void setTerrainModifiers(Map<TerrainType, TerrainModifier> terrainModifiers) {
+        this.terrainModifiers = terrainModifiers;
     }
 
-    @Override
-    public String toString() {
-        return name + ", " + id + ", " + hp + ", " + org + ", " + equipment + ", " + terrainModifiers;
+    public double getMaximumSpeed() {
+        return maximumSpeed;
+    }
+
+    public void setMaximumSpeed(double maximumSpeed) {
+        this.maximumSpeed = maximumSpeed;
+    }
+
+    public double getBuildCostIc() {
+        return buildCostIc;
+    }
+
+    public void setBuildCostIc(double buildCostIc) {
+        this.buildCostIc = buildCostIc;
+    }
+
+    public double getFuelConsumption() {
+        return fuelConsumption;
+    }
+
+    public void setFuelConsumption(double fuelConsumption) {
+        this.fuelConsumption = fuelConsumption;
+    }
+
+    public double getDefense() {
+        return defense;
+    }
+
+    public void setDefense(double defense) {
+        this.defense = defense;
+    }
+
+    public double getBreakthrough() {
+        return breakthrough;
+    }
+
+    public void setBreakthrough(double breakthrough) {
+        this.breakthrough = breakthrough;
+    }
+
+    public double getHardness() {
+        return hardness;
+    }
+
+    public void setHardness(double hardness) {
+        this.hardness = hardness;
+    }
+
+    public double getArmorValue() {
+        return armorValue;
+    }
+
+    public void setArmorValue(double armorValue) {
+        this.armorValue = armorValue;
+    }
+
+    public double getSoftAttack() {
+        return softAttack;
+    }
+
+    public void setSoftAttack(double softAttack) {
+        this.softAttack = softAttack;
+    }
+
+    public double getHardAttack() {
+        return hardAttack;
+    }
+
+    public void setHardAttack(double hardAttack) {
+        this.hardAttack = hardAttack;
+    }
+
+    public double getApAttack() {
+        return apAttack;
+    }
+
+    public void setApAttack(double apAttack) {
+        this.apAttack = apAttack;
+    }
+
+    public double getAirAttack() {
+        return airAttack;
+    }
+
+    public void setAirAttack(double airAttack) {
+        this.airAttack = airAttack;
     }
 }
