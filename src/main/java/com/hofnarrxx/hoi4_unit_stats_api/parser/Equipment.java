@@ -9,6 +9,7 @@ public class Equipment {
     private String id;
     private int year;
     private ArrayList<String> type;
+    private String archetype;
     // misc
     private double reliability;
     private double maximumSpeed;
@@ -157,5 +158,13 @@ public class Equipment {
                 ", defense=" + defense +
                 ", softAttack=" + softAttack +
                 '}';
+    }
+
+    public String getArchetype() {
+        return archetype;
+    }
+
+    public void setArchetype(String archetype) {
+        this.archetype = archetype;
     }
 }

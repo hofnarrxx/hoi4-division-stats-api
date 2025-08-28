@@ -42,7 +42,7 @@ public class Controller {
 
     @GetMapping("/calculate")
     public ResponseEntity<?> calculateDivisionStats(@RequestBody DivisionDTO div){
-        statsService.calculateDivisionStats(div);
-        return ResponseEntity.ok(null);
+        DivStatsDTO stats = statsService.calculateDivisionStats(div);
+        return ResponseEntity.ok(stats);
     }
 }

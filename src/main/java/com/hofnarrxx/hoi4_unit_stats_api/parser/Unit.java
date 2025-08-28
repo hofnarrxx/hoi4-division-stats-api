@@ -8,6 +8,7 @@ public class Unit {
     private String name;
     private String id; //abbreviation
     private ArrayList<String> type;
+    private String supportTypeBlock;
     private String group;
     private double combatWidth;
     private double hp;
@@ -184,6 +185,22 @@ public class Unit {
 
     public void setEquipmentCapture(double equipmentCapture) {
         this.equipmentCapture = equipmentCapture;
+    }
+
+    public String getSupportTypeBlock() {
+        return supportTypeBlock;
+    }
+
+    public void setSupportTypeBlock(String supportTypeBlock) {
+        this.supportTypeBlock = supportTypeBlock;
+    }
+
+    public void setEquipment(Map<String, Integer> equipment) {
+        this.equipment = equipment;
+    }
+
+    public void setTerrainModifiers(Map<TerrainType, TerrainModifier> terrainModifiers) {
+        this.terrainModifiers = terrainModifiers;
     }
 
     public Map<String, Integer> getEquipment(){

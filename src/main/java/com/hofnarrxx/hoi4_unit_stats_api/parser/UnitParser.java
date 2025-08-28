@@ -92,6 +92,7 @@ public class UnitParser extends Parser {
                 switch (key) {
                     case "group" -> unit.setGroup(value);
                     case "abbreviation" -> unit.setId(value.replace("\"", ""));
+                    case "same_support_type" -> unit.setSupportTypeBlock(value);
                     case "combat_width" -> unit.setCombatWidth(Double.parseDouble(value));
                     case "max_strength" -> unit.setHp(Double.parseDouble(value));
                     case "max_organisation" -> unit.setOrg(Double.parseDouble(value));
