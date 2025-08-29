@@ -16,6 +16,8 @@ public class UnitParser extends Parser {
         for (Map.Entry<String, String> entry : unitBlocks.entrySet()) {
             String name = entry.getKey();
             String block = entry.getValue();
+            if (name.equals("fake_intel_unit"))
+                continue;
             Unit unit = parseSingleUnit(name, block);
             unitList.add(unit);
         }

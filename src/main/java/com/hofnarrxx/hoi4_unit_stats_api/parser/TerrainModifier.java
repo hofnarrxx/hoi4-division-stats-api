@@ -1,7 +1,7 @@
 package com.hofnarrxx.hoi4_unit_stats_api.parser;
 
 public class TerrainModifier {
-    private double attackModifier;  
+    private double attackModifier;
     private double defenseModifier;
     private double movementModifier;
 
@@ -11,11 +11,26 @@ public class TerrainModifier {
         this.movementModifier = movement;
     }
 
-    public double getAttackModifier() { return attackModifier; }
-    public double getDefenseModifier() { return defenseModifier; }
-    public double getMovementModifier() { return movementModifier; }
+    public double getAttackModifier() {
+        return attackModifier;
+    }
+
+    public double getDefenseModifier() {
+        return defenseModifier;
+    }
+
+    public double getMovementModifier() {
+        return movementModifier;
+    }
+
     @Override
-    public String toString(){
-        return "{attack = "+ attackModifier+", "+"defense = " + defenseModifier+", movement = "+movementModifier+"}";
+    public String toString() {
+        return "{attack = " + attackModifier + ", " + "defense = " + defenseModifier + ", movement = "
+                + movementModifier + "}";
+    }
+
+    public TerrainModifier add(TerrainModifier other) {
+        return new TerrainModifier(attackModifier + other.attackModifier, defenseModifier + other.defenseModifier,
+                movementModifier + other.movementModifier);
     }
 }

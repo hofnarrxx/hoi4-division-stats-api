@@ -5,33 +5,35 @@ import java.util.ArrayList;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.Unit;
 
 public class DivisionDTO {
-    private ArrayList<Unit> battalions;
-    private ArrayList<Unit> support;
+    private ArrayList<String> battalions;
+    private ArrayList<String> supportCompanies;
     private int year;
     //doctrine?
     
     public int getBattalionCount() {
-        return (int) this.battalions.stream().filter(battalion -> !battalion.getId().isBlank()).count();
+        //return (int) this.battalions.stream().filter(battalion -> !battalion.getId().isBlank()).count();
+        return (int) this.battalions.stream().filter(battalion -> !battalion.isBlank()).count();
     }
 
-    public int getSupportCount() {
-        return (int) this.support.stream().filter(support -> !support.getId().isBlank()).count();
+    public int getSupportCompaniesCount() {
+        //return (int) this.support.stream().filter(support -> !support.getId().isBlank()).count();
+        return (int) this.supportCompanies.stream().filter(support -> !support.isBlank()).count();
     }
 
-    public ArrayList<Unit> getBattalions() {
+    public ArrayList<String> getBattalions() {
         return battalions;
     }
 
-    public void setBattalions(ArrayList<Unit> battalions) {
+    public void setBattalions(ArrayList<String> battalions) {
         this.battalions = battalions;
     }
 
-    public ArrayList<Unit> getSupport() {
-        return support;
+    public ArrayList<String> getSupportCompanies() {
+        return supportCompanies;
     }
 
-    public void setSupport(ArrayList<Unit> support) {
-        this.support = support;
+    public void setSupportCompanies(ArrayList<String> supportCompanies) {
+        this.supportCompanies = supportCompanies;
     }
 
     public int getYear() {
