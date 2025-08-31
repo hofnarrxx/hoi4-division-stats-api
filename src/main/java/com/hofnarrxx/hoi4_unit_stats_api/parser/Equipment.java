@@ -9,6 +9,7 @@ public class Equipment {
     private String id;
     private int year;
     private ArrayList<String> type;
+    private boolean isArchetype;
     private String archetype;
     // misc
     private double reliability;
@@ -166,5 +167,27 @@ public class Equipment {
 
     public void setArchetype(String archetype) {
         this.archetype = archetype;
+    }
+
+    public boolean isArchetype() {
+        return isArchetype;
+    }
+
+    public void setIsArchetype(boolean isArchetype) {
+        this.isArchetype = isArchetype;
+    }
+
+    public void upgrage(Equipment modernEq){
+        setYear(modernEq.getYear() != 0 ? modernEq.getYear() : year);
+        setDefense(modernEq.getDefense() != 0 ? modernEq.getDefense() : defense);
+        setBreakthrough(modernEq.getBreakthrough() != 0 ? modernEq.getBreakthrough() : breakthrough);
+        setHardness(modernEq.getHardness() != 0 ? modernEq.getHardness() : hardness);
+        setArmorValue(modernEq.getArmorValue() != 0 ? modernEq.getArmorValue() : armorValue);
+        setSoftAttack(modernEq.getSoftAttack() != 0 ? modernEq.getSoftAttack() : softAttack);
+        setHardAttack(modernEq.getHardAttack() != 0 ? modernEq.getHardAttack() : hardAttack);
+        setAirAttack(modernEq.getAirAttack() != 0 ? modernEq.getAirAttack() : airAttack);
+        setApAttack(modernEq.getApAttack() != 0 ? modernEq.getApAttack() : apAttack);
+        setMaximumSpeed(modernEq.getMaximumSpeed() != 0 ? modernEq.getMaximumSpeed() : maximumSpeed);
+        setBuildCostIc(modernEq.getBuildCostIc() != 0 ? modernEq.getBuildCostIc() : buildCostIc);
     }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -104,24 +105,27 @@ public class StatsService {
                             .findFirst().orElse(null);
                     if (!anotherBattalion.getGroup().equals(battalion.getGroup())) {
                         // error
+                        throw new RuntimeException("bad design");
                     }
                 }
             }
         }
         // check support
         for (int i = 0; i < 5; i++) {
-            if(div.getSupportCompanies().get(i).equals("")) continue;
+            if (div.getSupportCompanies().get(i).equals(""))
+                continue;
             int fi = i;
             Unit support = unitList.stream().filter(u -> u.getId().equals(div.getSupportCompanies().get(fi)))
                     .findFirst()
                     .orElse(null);
             for (int j = i + 1; j < 5; j++) {
-                if(div.getSupportCompanies().get(j).equals("")) continue;
+                if (div.getSupportCompanies().get(j).equals(""))
+                    continue;
                 int fj = j;
                 Unit anotherSupport = unitList.stream().filter(u -> u.getId().equals(div.getSupportCompanies().get(fj)))
                         .findFirst().orElse(null);
-                        System.out.println(support+"..."+anotherSupport);
-                if (support.getSupportTypeBlock() != null && anotherSupport.getName().contains(support.getSupportTypeBlock())) {
+                if (support.getSupportTypeBlock() != null
+                        && anotherSupport.getName().contains(support.getSupportTypeBlock())) {
                     // error
                 }
             }
@@ -146,16 +150,20 @@ public class StatsService {
         // calculate and return stats
         DivStatsDTO divStatsDTO = new DivStatsDTO();
         int battalionCount = div.getBattalionCount();
+        int supportCompaniesCount = div.getSupportCompaniesCount();
+        int unitCount = battalionCount + supportCompaniesCount;
         double recoveryRateSum = 0;
         double apAttackSum = 0, apAttackMax = 0;
         double hardnessSum = 0;
         double armorSum = 0, armorMax = 0;
-
-        for (int i = 0; i < 25; i++) {
-            Unit battalion = battalions.get(i);
+        double orgSum = 0;
+        divStatsDTO.setMaximumSpeed(999);
+        // main stats
+        for (Unit battalion : battalions) {
+            // Unit battalion = battalions.get(i);
             // base
             divStatsDTO.setHp(divStatsDTO.getHp() + battalion.getHp());
-            divStatsDTO.setOrg(divStatsDTO.getOrg() + battalion.getOrg());
+            orgSum += battalion.getOrg();
             recoveryRateSum += battalion.getRecoveryRate();
             divStatsDTO.setWeight(divStatsDTO.getWeight() + battalion.getWeight());
             divStatsDTO.setSupplyConsumption(divStatsDTO.getSupplyConsumption() + battalion.getSupplyConsumption());
@@ -164,17 +172,26 @@ public class StatsService {
             List<Equipment> battalionEquipment = new ArrayList<>();
             Map<Equipment, Integer> battalionEquipmentMap = new HashMap<>();
             for (Map.Entry<String, Integer> entry : battalion.getEquipment().entrySet()) {
-                battalionEquipment = equipmentList.stream()
-                        .filter(eq -> eq.getId().contains(entry.getKey()) && eq.getYear() == div.getYear())
-                        .collect(Collectors.toList());
-
-                for (Equipment eq : battalionEquipment) {
-                    battalionEquipmentMap.put(eq, entry.getValue());
-                }
+                Equipment archetype = equipmentList.stream().filter(eq -> eq.getId().equals(entry.getKey())).findFirst().orElse(null);
+                List<Equipment> temp = equipmentList.stream().filter(eq-> !eq.isArchetype() && eq.getArchetype().equals(archetype.getId()) && eq.getYear() <= div.getYear()).collect(Collectors.toList());
+                temp.stream().max((eq1, eq2) -> Integer.compare(eq1.getYear(), eq2.getYear())).ifPresent(eq -> {
+                    archetype.upgrage(eq);
+                    battalionEquipment.add(archetype);
+                    battalionEquipmentMap.put(archetype, entry.getValue());
+                });
+                // List<Equipment> temp = new ArrayList<>();
+                // temp.addAll(equipmentList.stream()
+                //         .filter(eq -> eq.getId().matches("^" + entry.getKey() + "(_\\d+)?$")
+                //                 && eq.getYear() <= div.getYear())
+                //         .collect(Collectors.toList()));
+                // temp.stream().max((eq1, eq2) -> Integer.compare(eq1.getYear(), eq2.getYear())).ifPresent(eq -> {
+                //     battalionEquipment.add(eq);
+                //     battalionEquipmentMap.put(eq, entry.getValue());
+                // });
             }
             // stats from equipment
             for (Equipment eq : battalionEquipment) {
-                if (divStatsDTO.getMaximumSpeed() > eq.getMaximumSpeed()) {
+                if (divStatsDTO.getMaximumSpeed() > eq.getMaximumSpeed() && eq.getMaximumSpeed()>0) {
                     divStatsDTO.setMaximumSpeed(eq.getMaximumSpeed());
                 }
                 divStatsDTO.setSoftAttack(divStatsDTO.getSoftAttack() + eq.getSoftAttack());
@@ -200,17 +217,89 @@ public class StatsService {
                 divStatsDTO.setTrainingTime(battalion.getTrainingTime());
             // terrain
             for (Map.Entry<TerrainType, TerrainModifier> entry : battalion.getTerrainModifiers().entrySet()) {
-                divStatsDTO.getTerrainModifiers().put(entry.getKey(),
-                        divStatsDTO.getTerrainModifiers().get(entry.getKey()).add(entry.getValue()));
+                if (divStatsDTO.getTerrainModifiers().get(entry.getKey()) == null) {
+                    divStatsDTO.getTerrainModifiers().put(entry.getKey(), entry.getValue());
+                } else {
+                    divStatsDTO.getTerrainModifiers().put(entry.getKey(),
+                            divStatsDTO.getTerrainModifiers().get(entry.getKey()).add(entry.getValue()));
+                }
             }
         }
-        divStatsDTO.setRecoveryRate(recoveryRateSum / battalionCount);
+        // support stats
+        for (Unit supportCompany : supportCompanies) {
+            // base
+            divStatsDTO.setHp(divStatsDTO.getHp() + supportCompany.getHp());
+            orgSum += supportCompany.getOrg();
+            recoveryRateSum += supportCompany.getRecoveryRate();
+            divStatsDTO.setWeight(divStatsDTO.getWeight() + supportCompany.getWeight());
+            divStatsDTO
+                    .setSupplyConsumption(divStatsDTO.getSupplyConsumption() + supportCompany.getSupplyConsumption());
+            divStatsDTO.setCombatWidth(divStatsDTO.getCombatWidth() + supportCompany.getCombatWidth());
+            // find matching equipment
+            List<Equipment> battalionEquipment = new ArrayList<>();
+            Map<Equipment, Integer> battalionEquipmentMap = new HashMap<>();
+            for (Map.Entry<String, Integer> entry : supportCompany.getEquipment().entrySet()) {
+                Equipment archetype = equipmentList.stream().filter(eq -> eq.getId().equals(entry.getKey())).findFirst().orElse(null);
+                List<Equipment> temp = equipmentList.stream().filter(eq-> !eq.isArchetype() && eq.getArchetype().equals(archetype.getId()) && eq.getYear() <= div.getYear()).collect(Collectors.toList());
+                temp.stream().max((eq1, eq2) -> Integer.compare(eq1.getYear(), eq2.getYear())).ifPresent(eq -> {
+                    archetype.upgrage(eq);
+                    battalionEquipment.add(archetype);
+                    battalionEquipmentMap.put(archetype, entry.getValue());
+                });
+                // List<Equipment> temp = new ArrayList<>();
+                // temp.addAll(equipmentList.stream()
+                //         .filter(eq -> eq.getId().matches("^" + entry.getKey() + "(_\\d+)?$")
+                //                 && eq.getYear() <= div.getYear())
+                //         .collect(Collectors.toList()));
+                // temp.stream().max((eq1, eq2) -> Integer.compare(eq1.getYear(), eq2.getYear())).ifPresent(eq -> {
+                //     battalionEquipment.add(eq);
+                //     battalionEquipmentMap.put(eq, entry.getValue());
+                // });
+            }
+            // stats from equipment
+            for (Equipment eq : battalionEquipment) {
+                if (divStatsDTO.getMaximumSpeed() > eq.getMaximumSpeed() && eq.getMaximumSpeed() > 0) {
+                    divStatsDTO.setMaximumSpeed(eq.getMaximumSpeed());
+                }
+                divStatsDTO.setSoftAttack(divStatsDTO.getSoftAttack() + eq.getSoftAttack()*(1 + supportCompany.getSupportModifiers().getOrDefault("soft_attack", 0.0)));
+                divStatsDTO.setHardAttack(divStatsDTO.getHardAttack() + eq.getHardAttack()*(1 + supportCompany.getSupportModifiers().getOrDefault("hard_attack", 0.0)));
+                divStatsDTO.setAirAttack(divStatsDTO.getAirAttack() + eq.getAirAttack()*(1 + supportCompany.getSupportModifiers().getOrDefault("air_attack", 0.0)));
+                double currApAttack = eq.getApAttack()*(1 + supportCompany.getSupportModifiers().getOrDefault("ap_attack", 0.0));
+                apAttackSum += currApAttack;
+                apAttackMax = currApAttack > apAttackMax ? currApAttack : apAttackMax; 
+                divStatsDTO.setDefense(divStatsDTO.getDefense() + eq.getDefense()*(1 + supportCompany.getSupportModifiers().getOrDefault("defense", 0.0)));
+                divStatsDTO.setBreakthrough(divStatsDTO.getBreakthrough() + eq.getBreakthrough()*(1 + supportCompany.getSupportModifiers().getOrDefault("breakthrough", 0.0)));
+                hardnessSum += eq.getHardness();
+                double currArmor = eq.getArmorValue()*(1 + supportCompany.getSupportModifiers().getOrDefault("armor_value", 0.0));
+                armorSum += currArmor;
+                armorMax = currArmor > armorMax ? currArmor : armorMax;
+            }
+            // cost
+            for (Map.Entry<Equipment, Integer> entry : battalionEquipmentMap.entrySet()) {
+                divStatsDTO.setBuildCostIc(
+                        divStatsDTO.getBuildCostIc() + entry.getKey().getBuildCostIc() * entry.getValue());
+            }
+            divStatsDTO.setManpower(divStatsDTO.getManpower() + supportCompany.getManpower());
+            if (supportCompany.getTrainingTime() > divStatsDTO.getTrainingTime())
+                divStatsDTO.setTrainingTime(supportCompany.getTrainingTime());
+            // terrain
+            for (Map.Entry<TerrainType, TerrainModifier> entry : supportCompany.getTerrainModifiers().entrySet()) {
+                if (divStatsDTO.getTerrainModifiers().get(entry.getKey()) == null) {
+                    divStatsDTO.getTerrainModifiers().put(entry.getKey(), entry.getValue());
+                } else {
+                    divStatsDTO.getTerrainModifiers().put(entry.getKey(),
+                            divStatsDTO.getTerrainModifiers().get(entry.getKey()).add(entry.getValue()));
+                }
+            }
+        }
+        divStatsDTO.setOrg(orgSum / unitCount);
+        divStatsDTO.setRecoveryRate(recoveryRateSum / unitCount);
         // A division's piercing is equal to 40% of the highest piercing in the division
         // plus 60% of the average piercing of all battalions and companies in the
         // division.
-        divStatsDTO.setApAttack(apAttackSum / battalionCount * 0.6 + apAttackMax * 0.4);
-        divStatsDTO.setHardness(hardnessSum / battalionCount);
-        divStatsDTO.setArmorValue(armorSum / battalionCount * 0.6 + armorMax * 0.4);
+        divStatsDTO.setApAttack(apAttackSum / unitCount * 0.6 + apAttackMax * 0.4);
+        divStatsDTO.setHardness(hardnessSum / unitCount);
+        divStatsDTO.setArmorValue(armorSum / unitCount * 0.6 + armorMax * 0.4);
         return divStatsDTO;
     }
 }

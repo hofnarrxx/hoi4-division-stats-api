@@ -27,12 +27,14 @@ public class Unit {
     private double equipmentCapture;
     private Map<String, Integer> equipment;
     private Map<TerrainType, TerrainModifier> terrainModifiers;
+    private Map<String, Double> supportModifiers;
 
     public Unit(String name) {
         this.name = name;
         this.type = new ArrayList<>();
         this.equipment = new HashMap<>();
         this.terrainModifiers = new HashMap<>();
+        this.supportModifiers = new HashMap<>();
     }
 
     public String getName() {
@@ -222,5 +224,17 @@ public class Unit {
     @Override
     public String toString() {
         return name + ", " + id + ", " + hp + ", " + org + ", " + equipment + ", " + terrainModifiers;
+    }
+
+    public Map<String, Double> getSupportModifiers() {
+        return supportModifiers;
+    }
+
+    public void setSupportModifiers(Map<String, Double> supportModifiers) {
+        this.supportModifiers = supportModifiers;
+    }
+
+    public void addSupportModifier(String modifier, double value){
+        this.supportModifiers.put(modifier, value);
     }
 }

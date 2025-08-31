@@ -58,6 +58,7 @@ public class EquipmentParser extends Parser{
                 // Assign values
                 switch (key) {
                     case "year" -> eq.setYear(Integer.parseInt(value));
+                    case "is_archetype" -> eq.setIsArchetype(true);
                     case "archetype" -> eq.setArchetype(value);
                     case "defense" -> eq.setDefense(Double.parseDouble(value));
                     case "soft_attack" -> eq.setSoftAttack(Double.parseDouble(value));

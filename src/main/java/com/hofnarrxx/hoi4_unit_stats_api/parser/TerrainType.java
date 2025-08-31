@@ -4,7 +4,7 @@ public enum TerrainType {
     FOREST,
     HILLS,
     MOUNTAIN,
-    URBAN,
+    PLAINS,
     MARSH,
     JUNGLE,
     FORT,

@@ -59,17 +59,18 @@ public class UnitParser extends Parser {
             } else if (key.equals("need") && value.equals("{")) {
                 i++;
                 while (i < lines.length) {
-                    String nextLine = lines[i++].trim();
+                    String nextLine = lines[i].trim();
                     if (nextLine.startsWith("#"))
                         continue;
                     if (nextLine.equals("}"))
                         break;
+                    i++;
                     String[] eqParts = nextLine.split("=", 2);
                     unit.addEquipment(eqParts[0].trim(), Integer.parseInt(eqParts[1].trim()));
                 }
             } else if ((key.equals("forest") || key.equals("hills") || key.equals("mountain") || key.equals("jungle") ||
                     key.equals("marsh") || key.equals("fort") || key.equals("river") || key.equals("amphibious") ||
-                    key.equals("urban") || key.equals("desert")) && value.equals("{")) {
+                    key.equals("plains") || key.equals("desert")) && value.equals("{")) {
                 double attack = 0, defense = 0, movement = 0;
                 i++;
                 while (i < lines.length) {
@@ -110,6 +111,10 @@ public class UnitParser extends Parser {
                     case "initiative" -> unit.setInitiative(Double.parseDouble(value));
                     case "entrenchment" -> unit.setEntrenchment(Double.parseDouble(value));
                     case "equipment_capture_factor" -> unit.setEquipmentCapture(Double.parseDouble(value));
+                    // support modifiers
+                    case "defense", "soft_attack", "hard_attack", "ap_attack", "air_attack", "breakthrough",
+                            "armor_value" ->
+                        unit.addSupportModifier(key, Double.parseDouble(value));
                     default -> {
                     } // Ignore unneeded keys
                 }
