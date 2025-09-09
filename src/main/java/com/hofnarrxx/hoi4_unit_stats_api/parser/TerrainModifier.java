@@ -33,4 +33,8 @@ public class TerrainModifier {
         return new TerrainModifier(attackModifier + other.attackModifier, defenseModifier + other.defenseModifier,
                 movementModifier + other.movementModifier);
     }
+
+    public TerrainModifier divide(double divider){
+        return new TerrainModifier(attackModifier/divider, defenseModifier/divider, movementModifier/divider);
+    }
 }

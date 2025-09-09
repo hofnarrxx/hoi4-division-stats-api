@@ -40,10 +40,33 @@ public class UnitParser extends Parser {
 
             String key = parts[0].trim();
             String value = parts[1].trim();
-            // if (line.startsWith("resources")) {
-            // continue;
-            // }
-            if (key.equals("type") && value.equals("{")) {
+            if (line.startsWith("battalion_mult")) {
+                i++;
+                while (i < lines.length) {
+                    String nextLine = lines[i++].trim();
+                    // no idea what "add" is responsible for, but example in engineers
+                    if (nextLine.startsWith("#") || nextLine.equals("") || nextLine.startsWith("add"))
+                        continue;
+                    if (nextLine.equals("}"))
+                        break;
+                    String[] partsMult = nextLine.split("=", 2);
+                    if (nextLine.contains("category")) {
+                        unit.getBattalionMult().setCategory(partsMult[1].trim());
+                    } else {
+                        unit.getBattalionMult().addMultiplier(partsMult[0].trim(), Double.parseDouble(partsMult[1]));
+                    }
+                }
+            } else if (line.startsWith("categories")) {
+                i++;
+                while(i<lines.length){
+                    String nextLine = lines[i++].trim();
+                    if (nextLine.startsWith("#"))
+                        continue;
+                    if (nextLine.equals("}"))
+                        break;
+                    unit.addCategory(nextLine);
+                }
+            } else if (key.equals("type") && value.equals("{")) {
                 // Parse block
                 ArrayList<String> types = new ArrayList<>();
                 i++; // move to next line
@@ -74,21 +97,22 @@ public class UnitParser extends Parser {
                 double attack = 0, defense = 0, movement = 0;
                 i++;
                 while (i < lines.length) {
-                    String nextLine = lines[i++].trim();
+                    String nextLine = lines[i].trim();
                     if (nextLine.startsWith("#"))
                         continue;
                     if (nextLine.equals("}"))
                         break;
                     String[] terrainParts = nextLine.split("=", 2);
-                    if (terrainParts[0].equals("attack")) {
+                    if (terrainParts[0].trim().equals("attack")) {
                         attack = Double.parseDouble(terrainParts[1].trim());
-                    } else if (terrainParts[0].equals("defense")) {
+                    } else if (terrainParts[0].trim().equals("defense")) {
                         defense = Double.parseDouble(terrainParts[1].trim());
                     } else {
                         movement = Double.parseDouble(terrainParts[1].trim());
                     }
                     unit.addTerrainModifier(TerrainType.valueOf(key.toUpperCase()),
                             new TerrainModifier(attack, defense, movement));
+                    i++;
                 }
             } else {
                 // Assign values
@@ -113,8 +137,9 @@ public class UnitParser extends Parser {
                     case "equipment_capture_factor" -> unit.setEquipmentCapture(Double.parseDouble(value));
                     // support modifiers
                     case "defense", "soft_attack", "hard_attack", "ap_attack", "air_attack", "breakthrough",
-                            "armor_value" ->
-                        unit.addSupportModifier(key, Double.parseDouble(value));
+                            "armor_value" -> {
+                        unit.addSupportNerf(key, Double.parseDouble(value));
+                    }
                     default -> {
                     } // Ignore unneeded keys
                 }

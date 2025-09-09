@@ -8,6 +8,7 @@ public class Unit {
     private String name;
     private String id; //abbreviation
     private ArrayList<String> type;
+    private ArrayList<String> categories;
     private String supportTypeBlock;
     private String group;
     private double combatWidth;
@@ -27,15 +28,22 @@ public class Unit {
     private double equipmentCapture;
     private Map<String, Integer> equipment;
     private Map<TerrainType, TerrainModifier> terrainModifiers;
-    private Map<String, Double> supportModifiers;
-
+    private Map<String, Double> supportNerfs;
+    private BattalionMult battalionMult; //only support companies have this 
+ 
     public Unit(String name) {
         this.name = name;
         this.type = new ArrayList<>();
+        this.categories = new ArrayList<>();
         this.equipment = new HashMap<>();
         this.terrainModifiers = new HashMap<>();
-        this.supportModifiers = new HashMap<>();
+        for(TerrainType type : TerrainType.values()){
+            terrainModifiers.put(type, new TerrainModifier(0, 0, 0));
+        }
+        this.supportNerfs = new HashMap<>();
+        this.battalionMult = new BattalionMult();
     }
+
 
     public String getName() {
         return name;
@@ -226,15 +234,37 @@ public class Unit {
         return name + ", " + id + ", " + hp + ", " + org + ", " + equipment + ", " + terrainModifiers;
     }
 
-    public Map<String, Double> getSupportModifiers() {
-        return supportModifiers;
+    public Map<String, Double> getSupportNerfs() {
+        return supportNerfs;
     }
 
-    public void setSupportModifiers(Map<String, Double> supportModifiers) {
-        this.supportModifiers = supportModifiers;
+    public void setSupportNerfs(Map<String, Double> supportNerfs) {
+        this.supportNerfs = supportNerfs;
     }
 
-    public void addSupportModifier(String modifier, double value){
-        this.supportModifiers.put(modifier, value);
+    public void addSupportNerf(String modifier, double value){
+        this.supportNerfs.put(modifier, value);
     }
+
+     public BattalionMult getBattalionMult() {
+        return battalionMult;
+    }
+
+    public void setBattalionMult(BattalionMult battalionMult) {
+        this.battalionMult = battalionMult;
+    }
+
+
+    public ArrayList<String> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(ArrayList<String> categories) {
+        this.categories = categories;
+    }
+
+    public void addCategory(String category){
+        categories.add(category);
+    }
+    
 }
