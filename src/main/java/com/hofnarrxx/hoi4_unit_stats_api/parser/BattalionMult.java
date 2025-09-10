@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class BattalionMult {
     String category;
-    Map<String, Double> multipliers;
+    Map<MultType, Double> multipliers;
     public BattalionMult(){
         multipliers = new HashMap<>();
     }
@@ -15,15 +15,16 @@ public class BattalionMult {
     public void setCategory(String category) {
         this.category = category;
     }
-    public Map<String, Double> getMultipliers() {
+    public Map<MultType, Double> getMultipliers() {
         return multipliers;
     }
-    public void setMultipliers(Map<String, Double> multipliers) {
+    public void setMultipliers(Map<MultType, Double> multipliers) {
         this.multipliers = multipliers;
     }
-    public void addMultiplier(String parameter, double value){
+    public void addMultiplier(MultType parameter, double value){
         multipliers.put(parameter, value);
     }
+    
 
     public void combine(BattalionMult other){
         other.getMultipliers().forEach((k,v)->this.getMultipliers().merge(k, v, Double::sum));
@@ -31,5 +32,13 @@ public class BattalionMult {
     @Override
     public String toString(){
         return category+": "+multipliers;
+    }
+
+    public static double apply(Map<MultType, Double> multipliers, double value, String stat){
+        MultType addMultType = new MultType(stat, true);
+        MultType multType = new MultType(stat, false);
+        double additiveValue = multipliers.getOrDefault(addMultType, 0.0);
+        double multValue = multipliers.getOrDefault(multType, 0.0);
+        return value * (1 + multValue) + additiveValue;
     }
 }

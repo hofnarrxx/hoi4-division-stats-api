@@ -41,24 +41,31 @@ public class UnitParser extends Parser {
             String key = parts[0].trim();
             String value = parts[1].trim();
             if (line.startsWith("battalion_mult")) {
+                BattalionMult battalionMult = new BattalionMult();
+                MultType multType = new MultType();
                 i++;
                 while (i < lines.length) {
                     String nextLine = lines[i++].trim();
-                    // no idea what "add" is responsible for, but example in engineers
-                    if (nextLine.startsWith("#") || nextLine.equals("") || nextLine.startsWith("add"))
+                    if (nextLine.startsWith("#") || nextLine.equals(""))
                         continue;
                     if (nextLine.equals("}"))
                         break;
+                    if (nextLine.startsWith("add")) {
+                        multType.setAdditive(true);
+                        continue;
+                    }
                     String[] partsMult = nextLine.split("=", 2);
                     if (nextLine.contains("category")) {
-                        unit.getBattalionMult().setCategory(partsMult[1].trim());
+                        battalionMult.setCategory(partsMult[1].trim());
                     } else {
-                        unit.getBattalionMult().addMultiplier(partsMult[0].trim(), Double.parseDouble(partsMult[1]));
+                        multType.setStat(parts[0].trim());
+                        battalionMult.addMultiplier(multType, Double.parseDouble(partsMult[1]));
                     }
                 }
+                unit.addBattalionMult(battalionMult);
             } else if (line.startsWith("categories")) {
                 i++;
-                while(i<lines.length){
+                while (i < lines.length) {
                     String nextLine = lines[i++].trim();
                     if (nextLine.startsWith("#"))
                         continue;

@@ -16,6 +16,7 @@ import com.hofnarrxx.hoi4_unit_stats_api.parser.EquipmentParser;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.FileUtil;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.Module;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.ModuleParser;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.MultType;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainModifier;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainType;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.Unit;
@@ -137,7 +138,7 @@ public class StatsService {
         int unitCount = battalionCount + supportCompaniesCount;
         Map<TerrainType, TerrainModifier> supportTerrainModifiers = new HashMap<>();
         Map<TerrainType, TerrainModifier> battalionsTerrainModifiersSum = new HashMap<>();
-        Map<TerrainType,TerrainModifier> divisionTerrainModifiers = new HashMap<>();
+        Map<TerrainType, TerrainModifier> divisionTerrainModifiers = new HashMap<>();
         double recoveryRateSum = 0;
         double apAttackSum = 0, apAttackMax = 0;
         double hardnessSum = 0;
@@ -147,16 +148,18 @@ public class StatsService {
         // battalion_mult handling, this parameter can be found in support companies
         ArrayList<BattalionMult> battalionMults = new ArrayList<>();
         for (Unit supportCompany : supportCompanies) {
-            BattalionMult currentMult = supportCompany.getBattalionMult();
-            if (currentMult.getCategory() != null) {
-                BattalionMult match = battalionMults.stream()
-                        .filter(m -> currentMult.getCategory().equals(m.getCategory())).findFirst().orElse(null);
-                if (match == null) {
-                    battalionMults.add(currentMult);
-                } else {
-                    int pos = battalionMults.indexOf(match);
-                    match.combine(currentMult);
-                    battalionMults.set(pos, match);
+            // BattalionMult currentMult = supportCompany.getBattalionMult();
+            for (BattalionMult currentMult : supportCompany.getBattalionMults()) {
+                if (currentMult.getCategory() != null) {
+                    BattalionMult match = battalionMults.stream()
+                            .filter(m -> currentMult.getCategory().equals(m.getCategory())).findFirst().orElse(null);
+                    if (match == null) {
+                        battalionMults.add(currentMult);
+                    } else {
+                        int pos = battalionMults.indexOf(match);
+                        match.combine(currentMult);
+                        battalionMults.set(pos, match);
+                    }
                 }
             }
         }
@@ -173,17 +176,17 @@ public class StatsService {
                     .orElse(null);
             if (battalionMult == null)
                 battalionMult = new BattalionMult();
-            Map<String, Double> multipliers = battalionMult.getMultipliers();
+            Map<MultType, Double> multipliers = battalionMult.getMultipliers();
             Map<String, Double> nerfs = supportCompany.getSupportNerfs();
             // base
             divStatsDTO.setHp(
-                    divStatsDTO.getHp() + supportCompany.getHp() * (1 + multipliers.getOrDefault("max_strength", 0.0)));
-            orgSum += supportCompany.getOrg() * (1 + multipliers.getOrDefault("max_organisation", 0.0));
-            recoveryRateSum += supportCompany.getRecoveryRate() * (1 + multipliers.getOrDefault("default_morale", 0.0));
+                    divStatsDTO.getHp() + BattalionMult.apply(multipliers, supportCompany.getHp(), "max_strength"));
+            orgSum += BattalionMult.apply(multipliers, supportCompany.getOrg(), "max_organisation");
+            recoveryRateSum += BattalionMult.apply(multipliers, supportCompany.getRecoveryRate(), "default_morale");
             divStatsDTO.setWeight(divStatsDTO.getWeight() + supportCompany.getWeight());
             divStatsDTO
-                    .setSupplyConsumption(divStatsDTO.getSupplyConsumption() + supportCompany.getSupplyConsumption()
-                            * (1 + multipliers.getOrDefault("supply_consumption", 0.0)));
+                    .setSupplyConsumption(divStatsDTO.getSupplyConsumption() + BattalionMult.apply(multipliers,
+                            supportCompany.getSupplyConsumption(), "supply_consumption"));
             divStatsDTO.setCombatWidth(divStatsDTO.getCombatWidth() + supportCompany.getCombatWidth());
             // find matching equipment
             List<Equipment> battalionEquipment = new ArrayList<>();
@@ -205,30 +208,23 @@ public class StatsService {
                 if (divStatsDTO.getMaximumSpeed() > eq.getMaximumSpeed() && eq.getMaximumSpeed() > 0) {
                     divStatsDTO.setMaximumSpeed(eq.getMaximumSpeed());
                 }
-                divStatsDTO.setSoftAttack(divStatsDTO.getSoftAttack() + eq.getSoftAttack()
-                        * (1 + nerfs.getOrDefault("soft_attack", 0.0))
-                        * (1 + multipliers.getOrDefault("soft_attack", 0.0)));
-                divStatsDTO.setHardAttack(divStatsDTO.getHardAttack() + eq.getHardAttack()
-                        * (1 + nerfs.getOrDefault("hard_attack", 0.0))
-                        * (1 + multipliers.getOrDefault("hard_attack", 0.0)));
-                divStatsDTO.setAirAttack(divStatsDTO.getAirAttack() + eq.getAirAttack()
-                        * (1 + nerfs.getOrDefault("air_attack", 0.0))
-                        * (1 + multipliers.getOrDefault("air_attack", 0.0)));
-                double currApAttack = eq.getApAttack()
-                        * (1 + nerfs.getOrDefault("ap_attack", 0.0)
-                                * (1 + multipliers.getOrDefault("ap_attack", 0.0)));
+                divStatsDTO.setSoftAttack(divStatsDTO.getSoftAttack() + BattalionMult.apply(multipliers,
+                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("soft_attack", 0.0)), "soft_attack"));
+                divStatsDTO.setHardAttack(divStatsDTO.getHardAttack() + BattalionMult.apply(multipliers,
+                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("hard_attack", 0.0)), "hard_attack"));
+                divStatsDTO.setAirAttack(divStatsDTO.getAirAttack() + BattalionMult.apply(multipliers,
+                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("air_attack", 0.0)), "air_attack"));
+                double currApAttack = BattalionMult.apply(multipliers,
+                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("ap_attack", 0.0)), "ap_attack");
                 apAttackSum += currApAttack;
                 apAttackMax = currApAttack > apAttackMax ? currApAttack : apAttackMax;
-                divStatsDTO.setDefense(divStatsDTO.getDefense() + eq.getDefense()
-                        * (1 + nerfs.getOrDefault("defense", 0.0))
-                        * (1 + multipliers.getOrDefault("defense", 0.0)));
-                divStatsDTO.setBreakthrough(divStatsDTO.getBreakthrough() + eq.getBreakthrough()
-                        * (1 + nerfs.getOrDefault("breakthrough", 0.0))
-                        * (1 + multipliers.getOrDefault("breakthrough", 0.0)));
+                divStatsDTO.setDefense(divStatsDTO.getDefense() + BattalionMult.apply(multipliers,
+                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("defense", 0.0)), "defense"));
+                divStatsDTO.setBreakthrough(divStatsDTO.getBreakthrough() + BattalionMult.apply(multipliers,
+                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("breakthrough", 0.0)), "breakthrough"));
                 hardnessSum += eq.getHardness();
-                double currArmor = eq.getArmorValue()
-                        * (1 + nerfs.getOrDefault("armor_value", 0.0)
-                                * (1 + multipliers.getOrDefault("armor_value", 0.0)));
+                double currArmor = BattalionMult.apply(multipliers,
+                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("armor_value", 0.0)), "armor_value");
                 armorSum += currArmor;
                 armorMax = currArmor > armorMax ? currArmor : armorMax;
             }
@@ -246,7 +242,7 @@ public class StatsService {
                     supportTerrainModifiers.put(entry.getKey(), entry.getValue());
                 } else {
                     supportTerrainModifiers.put(entry.getKey(),
-                           supportTerrainModifiers.get(entry.getKey()).add(entry.getValue()));
+                            supportTerrainModifiers.get(entry.getKey()).add(entry.getValue()));
                 }
             }
         }
@@ -263,15 +259,24 @@ public class StatsService {
                     .orElse(null);
             if (battalionMult == null)
                 battalionMult = new BattalionMult();
-            Map<String, Double> multipliers = battalionMult.getMultipliers();
+            Map<MultType, Double> multipliers = battalionMult.getMultipliers();
             // base
+            // divStatsDTO.setHp(
+            //         divStatsDTO.getHp() + battalion.getHp() * (1 + multipliers.getOrDefault("max_strength", 0.0)));
+            // orgSum += battalion.getOrg() * (1 + multipliers.getOrDefault("max_organisation", 0.0));
+            // recoveryRateSum += battalion.getRecoveryRate() * (1 + multipliers.getOrDefault("default_morale", 0.0));
+            // divStatsDTO.setWeight(divStatsDTO.getWeight() + battalion.getWeight());
+            // divStatsDTO.setSupplyConsumption(divStatsDTO.getSupplyConsumption()
+            //         + battalion.getSupplyConsumption() * (1 + multipliers.getOrDefault("supply_consumption", 0.0)));
+            // divStatsDTO.setCombatWidth(divStatsDTO.getCombatWidth() + battalion.getCombatWidth());
             divStatsDTO.setHp(
-                    divStatsDTO.getHp() + battalion.getHp() * (1 + multipliers.getOrDefault("max_strength", 0.0)));
-            orgSum += battalion.getOrg() * (1 + multipliers.getOrDefault("max_organisation", 0.0));
-            recoveryRateSum += battalion.getRecoveryRate() * (1 + multipliers.getOrDefault("default_morale", 0.0));
+                    divStatsDTO.getHp() + BattalionMult.apply(multipliers, battalion.getHp(), "max_strength"));
+            orgSum += BattalionMult.apply(multipliers, battalion.getOrg(), "max_organisation");
+            recoveryRateSum += BattalionMult.apply(multipliers, battalion.getRecoveryRate(), "default_morale");
             divStatsDTO.setWeight(divStatsDTO.getWeight() + battalion.getWeight());
-            divStatsDTO.setSupplyConsumption(divStatsDTO.getSupplyConsumption()
-                    + battalion.getSupplyConsumption() * (1 + multipliers.getOrDefault("supply_consumption", 0.0)));
+            divStatsDTO
+                    .setSupplyConsumption(divStatsDTO.getSupplyConsumption() + BattalionMult.apply(multipliers,
+                            battalion.getSupplyConsumption(), "supply_consumption"));
             divStatsDTO.setCombatWidth(divStatsDTO.getCombatWidth() + battalion.getCombatWidth());
             // find matching equipment
             List<Equipment> battalionEquipment = new ArrayList<>();
@@ -293,21 +298,23 @@ public class StatsService {
                 if (divStatsDTO.getMaximumSpeed() > eq.getMaximumSpeed() && eq.getMaximumSpeed() > 0) {
                     divStatsDTO.setMaximumSpeed(eq.getMaximumSpeed());
                 }
-                divStatsDTO.setSoftAttack(divStatsDTO.getSoftAttack()
-                        + eq.getSoftAttack() * (1 + multipliers.getOrDefault("soft_attack", 0.0)));
-                divStatsDTO.setHardAttack(divStatsDTO.getHardAttack()
-                        + eq.getHardAttack() * (1 + multipliers.getOrDefault("hard_attack", 0.0)));
-                divStatsDTO.setAirAttack(divStatsDTO.getAirAttack()
-                        + eq.getAirAttack() * (1 + multipliers.getOrDefault("air_attack", 0.0)));
-                double currApAttack = eq.getApAttack() * (1 + multipliers.getOrDefault("ap_attack", 0.0));
+                divStatsDTO.setSoftAttack(divStatsDTO.getSoftAttack() + BattalionMult.apply(multipliers,
+                        eq.getSoftAttack(), "soft_attack"));
+                divStatsDTO.setHardAttack(divStatsDTO.getHardAttack() + BattalionMult.apply(multipliers,
+                        eq.getSoftAttack(), "hard_attack"));
+                divStatsDTO.setAirAttack(divStatsDTO.getAirAttack() + BattalionMult.apply(multipliers,
+                        eq.getSoftAttack(), "air_attack"));
+                double currApAttack = BattalionMult.apply(multipliers,
+                        eq.getSoftAttack(), "ap_attack");
                 apAttackSum += currApAttack;
                 apAttackMax = currApAttack > apAttackMax ? currApAttack : apAttackMax;
-                divStatsDTO.setDefense(
-                        divStatsDTO.getDefense() + eq.getDefense() * (1 + multipliers.getOrDefault("defense", 0.0)));
-                divStatsDTO.setBreakthrough(divStatsDTO.getBreakthrough()
-                        + eq.getBreakthrough() * (1 + multipliers.getOrDefault("breakthrough", 0.0)));
+                divStatsDTO.setDefense(divStatsDTO.getDefense() + BattalionMult.apply(multipliers,
+                        eq.getSoftAttack(), "defense"));
+                divStatsDTO.setBreakthrough(divStatsDTO.getBreakthrough() + BattalionMult.apply(multipliers,
+                        eq.getSoftAttack(), "breakthrough"));
                 hardnessSum += eq.getHardness();
-                double currArmor = eq.getArmorValue() * (1 + multipliers.getOrDefault("armor_value", 0.0));
+                double currArmor = BattalionMult.apply(multipliers,
+                        eq.getSoftAttack(), "armor_value");
                 armorSum += currArmor;
                 armorMax = currArmor > armorMax ? currArmor : armorMax;
             }
@@ -325,7 +332,7 @@ public class StatsService {
                     battalionsTerrainModifiersSum.put(entry.getKey(), entry.getValue());
                 } else {
                     battalionsTerrainModifiersSum.put(entry.getKey(),
-                           battalionsTerrainModifiersSum.get(entry.getKey()).add(entry.getValue()));
+                            battalionsTerrainModifiersSum.get(entry.getKey()).add(entry.getValue()));
                 }
             }
         }
@@ -339,10 +346,10 @@ public class StatsService {
         divStatsDTO.setArmorValue(armorSum / unitCount * 0.6 + armorMax * 0.4);
         // The net adjuster for a division is the average of its combat battalions
         // plus the sum of the adjusters of its support battalions.
-        for(Map.Entry<TerrainType,TerrainModifier> entry : battalionsTerrainModifiersSum.entrySet()){
+        for (Map.Entry<TerrainType, TerrainModifier> entry : battalionsTerrainModifiersSum.entrySet()) {
             TerrainModifier battalionAverage = entry.getValue().divide(battalionCount);
             TerrainModifier supportBonus = supportTerrainModifiers.get(entry.getKey());
-            if(supportBonus != null){
+            if (supportBonus != null) {
                 divisionTerrainModifiers.put(entry.getKey(), battalionAverage.add(supportBonus));
                 continue;
             }

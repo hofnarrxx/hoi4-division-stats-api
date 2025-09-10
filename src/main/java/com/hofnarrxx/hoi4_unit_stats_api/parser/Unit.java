@@ -29,7 +29,7 @@ public class Unit {
     private Map<String, Integer> equipment;
     private Map<TerrainType, TerrainModifier> terrainModifiers;
     private Map<String, Double> supportNerfs;
-    private BattalionMult battalionMult; //only support companies have this 
+    private ArrayList<BattalionMult> battalionMults; //only support companies have this 
  
     public Unit(String name) {
         this.name = name;
@@ -41,7 +41,7 @@ public class Unit {
             terrainModifiers.put(type, new TerrainModifier(0, 0, 0));
         }
         this.supportNerfs = new HashMap<>();
-        this.battalionMult = new BattalionMult();
+        this.battalionMults = new ArrayList<>();
     }
 
 
@@ -246,14 +246,17 @@ public class Unit {
         this.supportNerfs.put(modifier, value);
     }
 
-     public BattalionMult getBattalionMult() {
-        return battalionMult;
+     public ArrayList<BattalionMult> getBattalionMults() {
+        return battalionMults;
     }
 
-    public void setBattalionMult(BattalionMult battalionMult) {
-        this.battalionMult = battalionMult;
+    public void setBattalionMults(ArrayList<BattalionMult> battalionMults) {
+        this.battalionMults = battalionMults;
     }
 
+    public void addBattalionMult(BattalionMult bm){
+        this.battalionMults.add(bm);
+    }
 
     public ArrayList<String> getCategories() {
         return categories;
