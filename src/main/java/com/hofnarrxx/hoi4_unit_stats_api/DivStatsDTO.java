@@ -18,10 +18,12 @@ public class DivStatsDTO {
     private double supplyConsumption;
     private double expLoss;
     private double reliability;
+    private double reliabilityBonus;
     private double recon;
     private double initiative;
     private double entrenchment;
     private double equipmentCapture;
+    private double casualtyTrickleback;
     private Map<String, Integer> equipment;
     private Map<TerrainType, TerrainModifier> terrainModifiers;
 
@@ -266,4 +268,22 @@ public class DivStatsDTO {
     public void setAirAttack(double airAttack) {
         this.airAttack = airAttack;
     }
+
+    public double getReliabilityBonus() {
+        return reliabilityBonus;
+    }
+
+    public void setReliabilityBonus(double reliabilityBonus) {
+        this.reliabilityBonus = reliabilityBonus;
+    }
+
+    public double getCasualtyTrickleback() {
+        return casualtyTrickleback;
+    }
+
+    public void setCasualtyTrickleback(double casualtyTrickleback) {
+        this.casualtyTrickleback = casualtyTrickleback;
+    }
+
+    
 }

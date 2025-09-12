@@ -147,8 +147,8 @@ public class StatsService {
         divStatsDTO.setMaximumSpeed(999);
         // battalion_mult handling, this parameter can be found in support companies
         ArrayList<BattalionMult> battalionMults = new ArrayList<>();
+        Map<String, Double> factors = new HashMap<>();
         for (Unit supportCompany : supportCompanies) {
-            // BattalionMult currentMult = supportCompany.getBattalionMult();
             for (BattalionMult currentMult : supportCompany.getBattalionMults()) {
                 if (currentMult.getCategory() != null) {
                     BattalionMult match = battalionMults.stream()
@@ -162,7 +162,18 @@ public class StatsService {
                     }
                 }
             }
+            // factors handling
+            for(Map.Entry<String,Double> entry : supportCompany.getFactors().entrySet()){
+                if(factors.containsKey(entry.getKey())){
+                    double sum = factors.get(entry.getKey());
+                    factors.put(entry.getKey(), sum + entry.getValue());
+                }
+                else{
+                     factors.put(entry.getKey(), entry.getValue());
+                }
+            }
         }
+
         // support stats
         for (Unit supportCompany : supportCompanies) {
             BattalionMult battalionMult = battalionMults.stream()
@@ -188,6 +199,9 @@ public class StatsService {
                     .setSupplyConsumption(divStatsDTO.getSupplyConsumption() + BattalionMult.apply(multipliers,
                             supportCompany.getSupplyConsumption(), "supply_consumption"));
             divStatsDTO.setCombatWidth(divStatsDTO.getCombatWidth() + supportCompany.getCombatWidth());
+            divStatsDTO.setSuppression(divStatsDTO.getSuppression()+ supportCompany.getSuppression()*(1+factors.getOrDefault("suppresion", 0.0)));
+            divStatsDTO.setSupplyConsumption(divStatsDTO.getSupplyConsumption()+ supportCompany.getSupplyConsumption()*(1+factors.getOrDefault("supply_consumption", 0.0)));
+            divStatsDTO.setCasualtyTrickleback(divStatsDTO.getCasualtyTrickleback()+supportCompany.getCasualtyTrickleback());
             // find matching equipment
             List<Equipment> battalionEquipment = new ArrayList<>();
             Map<Equipment, Integer> battalionEquipmentMap = new HashMap<>();
@@ -227,6 +241,7 @@ public class StatsService {
                         eq.getSoftAttack() * (1 + nerfs.getOrDefault("armor_value", 0.0)), "armor_value");
                 armorSum += currArmor;
                 armorMax = currArmor > armorMax ? currArmor : armorMax;
+                divStatsDTO.setFuelConsumption(divStatsDTO.getFuelConsumption()+eq.getFuelConsumption()*(1+factors.getOrDefault("fuel_consumption", 0.0)));
             }
             // cost
             for (Map.Entry<Equipment, Integer> entry : battalionEquipmentMap.entrySet()) {
@@ -261,14 +276,6 @@ public class StatsService {
                 battalionMult = new BattalionMult();
             Map<MultType, Double> multipliers = battalionMult.getMultipliers();
             // base
-            // divStatsDTO.setHp(
-            //         divStatsDTO.getHp() + battalion.getHp() * (1 + multipliers.getOrDefault("max_strength", 0.0)));
-            // orgSum += battalion.getOrg() * (1 + multipliers.getOrDefault("max_organisation", 0.0));
-            // recoveryRateSum += battalion.getRecoveryRate() * (1 + multipliers.getOrDefault("default_morale", 0.0));
-            // divStatsDTO.setWeight(divStatsDTO.getWeight() + battalion.getWeight());
-            // divStatsDTO.setSupplyConsumption(divStatsDTO.getSupplyConsumption()
-            //         + battalion.getSupplyConsumption() * (1 + multipliers.getOrDefault("supply_consumption", 0.0)));
-            // divStatsDTO.setCombatWidth(divStatsDTO.getCombatWidth() + battalion.getCombatWidth());
             divStatsDTO.setHp(
                     divStatsDTO.getHp() + BattalionMult.apply(multipliers, battalion.getHp(), "max_strength"));
             orgSum += BattalionMult.apply(multipliers, battalion.getOrg(), "max_organisation");
@@ -278,6 +285,8 @@ public class StatsService {
                     .setSupplyConsumption(divStatsDTO.getSupplyConsumption() + BattalionMult.apply(multipliers,
                             battalion.getSupplyConsumption(), "supply_consumption"));
             divStatsDTO.setCombatWidth(divStatsDTO.getCombatWidth() + battalion.getCombatWidth());
+            divStatsDTO.setSuppression(divStatsDTO.getSuppression()+ battalion.getSuppression()*(1+factors.getOrDefault("suppresion", 0.0)));
+            divStatsDTO.setSupplyConsumption(divStatsDTO.getSupplyConsumption()+ battalion.getSupplyConsumption()*(1+factors.getOrDefault("supply_consumption", 0.0)));
             // find matching equipment
             List<Equipment> battalionEquipment = new ArrayList<>();
             Map<Equipment, Integer> battalionEquipmentMap = new HashMap<>();
@@ -317,6 +326,7 @@ public class StatsService {
                         eq.getSoftAttack(), "armor_value");
                 armorSum += currArmor;
                 armorMax = currArmor > armorMax ? currArmor : armorMax;
+                divStatsDTO.setFuelConsumption(divStatsDTO.getFuelConsumption()+eq.getFuelConsumption()*(1+factors.getOrDefault("fuel_consumption", 0.0)));
             }
             // cost
             for (Map.Entry<Equipment, Integer> entry : battalionEquipmentMap.entrySet()) {
@@ -344,6 +354,9 @@ public class StatsService {
         divStatsDTO.setApAttack(apAttackSum / unitCount * 0.6 + apAttackMax * 0.4);
         divStatsDTO.setHardness(hardnessSum / unitCount);
         divStatsDTO.setArmorValue(armorSum / unitCount * 0.6 + armorMax * 0.4);
+        divStatsDTO.setExpLoss(factors.getOrDefault("experience_loss", 0.0));
+        divStatsDTO.setEquipmentCapture(factors.getOrDefault("equipment_capture", 0.0));
+        divStatsDTO.setReliabilityBonus(factors.getOrDefault("reliability", 0.0));
         // The net adjuster for a division is the average of its combat battalions
         // plus the sum of the adjusters of its support battalions.
         for (Map.Entry<TerrainType, TerrainModifier> entry : battalionsTerrainModifiersSum.entrySet()) {

@@ -121,6 +121,17 @@ public class UnitParser extends Parser {
                             new TerrainModifier(attack, defense, movement));
                     i++;
                 }
+            } else if (key.matches("^.+_factor$")) {
+                String[] factorParts = key.trim().split("_");
+                StringBuilder sb = new StringBuilder();
+                for(String part : factorParts){
+                    if(part.equals("factor")){
+                        sb.deleteCharAt(sb.length()-1);
+                        break;
+                    }
+                    sb.append(part+"_");
+                }
+                unit.getFactors().put(sb.toString(), Double.parseDouble(value.trim()));
             } else {
                 // Assign values
                 switch (key) {
@@ -136,12 +147,10 @@ public class UnitParser extends Parser {
                     case "suppression" -> unit.setSuppression(Double.parseDouble(value));
                     case "weight" -> unit.setWeight(Double.parseDouble(value));
                     case "supply_consumption" -> unit.setSupplyConsumption(Double.parseDouble(value));
-                    case "experience_loss_factor" -> unit.setExpLoss(Double.parseDouble(value));
-                    case "reliability_factor" -> unit.setReliability(Double.parseDouble(value));
                     case "recon" -> unit.setRecon(Double.parseDouble(value));
                     case "initiative" -> unit.setInitiative(Double.parseDouble(value));
                     case "entrenchment" -> unit.setEntrenchment(Double.parseDouble(value));
-                    case "equipment_capture_factor" -> unit.setEquipmentCapture(Double.parseDouble(value));
+                    case "casualty_trickleback" -> unit.setCasualtyTrickleback(Double.parseDouble(value));
                     // support modifiers
                     case "defense", "soft_attack", "hard_attack", "ap_attack", "air_attack", "breakthrough",
                             "armor_value" -> {

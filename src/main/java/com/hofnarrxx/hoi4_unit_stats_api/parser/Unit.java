@@ -20,16 +20,15 @@ public class Unit {
     private double suppression;
     private double weight;
     private double supplyConsumption;
-    private double expLoss;
-    private double reliability;
     private double recon;
     private double initiative;
     private double entrenchment;
-    private double equipmentCapture;
+    private double casualtyTrickleback;
     private Map<String, Integer> equipment;
     private Map<TerrainType, TerrainModifier> terrainModifiers;
     private Map<String, Double> supportNerfs;
-    private ArrayList<BattalionMult> battalionMults; //only support companies have this 
+    private ArrayList<BattalionMult> battalionMults; // support companies buffs for specific categories, can be additive or multiplicative
+    private Map<String, Double> factors; // important abilities of support companies
  
     public Unit(String name) {
         this.name = name;
@@ -42,6 +41,7 @@ public class Unit {
         }
         this.supportNerfs = new HashMap<>();
         this.battalionMults = new ArrayList<>();
+        this.factors = new HashMap<>();
     }
 
 
@@ -149,22 +149,6 @@ public class Unit {
         this.supplyConsumption = supplyConsumption;
     }
 
-    public double getExpLoss() {
-        return expLoss;
-    }
-
-    public void setExpLoss(double expLoss) {
-        this.expLoss = expLoss;
-    }
-
-    public double getReliability() {
-        return reliability;
-    }
-
-    public void setReliability(double reliability) {
-        this.reliability = reliability;
-    }
-
     public double getRecon() {
         return recon;
     }
@@ -187,14 +171,6 @@ public class Unit {
 
     public void setEntrenchment(double entrenchment) {
         this.entrenchment = entrenchment;
-    }
-
-    public double getEquipmentCapture() {
-        return equipmentCapture;
-    }
-
-    public void setEquipmentCapture(double equipmentCapture) {
-        this.equipmentCapture = equipmentCapture;
     }
 
     public String getSupportTypeBlock() {
@@ -268,6 +244,29 @@ public class Unit {
 
     public void addCategory(String category){
         categories.add(category);
+    }
+
+
+    public Map<String, Double> getFactors() {
+        return factors;
+    }
+
+
+    public void setFactors(Map<String, Double> factors) {
+        this.factors = factors;
+    }
+
+    public void addFactor(String stat, double value) {
+        this.factors.put(stat, value);
+    }
+
+
+    public double getCasualtyTrickleback() {
+        return casualtyTrickleback;
+    }
+    
+    public void setCasualtyTrickleback(double casualtyTrickleback) {
+        this.casualtyTrickleback = casualtyTrickleback;
     }
     
 }
