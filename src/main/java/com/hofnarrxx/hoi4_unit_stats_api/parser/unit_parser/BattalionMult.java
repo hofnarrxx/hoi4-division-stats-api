@@ -1,4 +1,4 @@
-package com.hofnarrxx.hoi4_unit_stats_api.parser;
+package com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +35,7 @@ public class BattalionMult {
     }
 
     public static double apply(Map<MultType, Double> multipliers, double value, String stat){
+        
         MultType addMultType = new MultType(stat, true);
         MultType multType = new MultType(stat, false);
         double additiveValue = multipliers.getOrDefault(addMultType, 0.0);

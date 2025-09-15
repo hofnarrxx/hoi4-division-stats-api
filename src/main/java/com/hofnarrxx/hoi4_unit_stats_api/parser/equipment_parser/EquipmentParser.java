@@ -1,8 +1,10 @@
-package com.hofnarrxx.hoi4_unit_stats_api.parser;
+package com.hofnarrxx.hoi4_unit_stats_api.parser.equipment_parser;
 
 import java.util.*;
 
 import org.springframework.stereotype.Component;
+
+import com.hofnarrxx.hoi4_unit_stats_api.parser.Parser;
 
 @Component
 public class EquipmentParser extends Parser{

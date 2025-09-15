@@ -1,15 +1,18 @@
-package com.hofnarrxx.hoi4_unit_stats_api.parser;
+package com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainModifier;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainType;
 
 public class Unit {
     private String name;
     private String id; //abbreviation
     private ArrayList<String> type;
     private ArrayList<String> categories;
-    private String supportTypeBlock;
+    private ArrayList<String> supportTypeBlocks;
     private String group;
     private double combatWidth;
     private double hp;
@@ -34,6 +37,7 @@ public class Unit {
         this.name = name;
         this.type = new ArrayList<>();
         this.categories = new ArrayList<>();
+        this.supportTypeBlocks = new ArrayList<>();
         this.equipment = new HashMap<>();
         this.terrainModifiers = new HashMap<>();
         for(TerrainType type : TerrainType.values()){
@@ -173,12 +177,16 @@ public class Unit {
         this.entrenchment = entrenchment;
     }
 
-    public String getSupportTypeBlock() {
-        return supportTypeBlock;
+    public ArrayList<String> getSupportTypeBlocks() {
+        return supportTypeBlocks;
     }
 
-    public void setSupportTypeBlock(String supportTypeBlock) {
-        this.supportTypeBlock = supportTypeBlock;
+    public void setSupportTypeBlocks(ArrayList<String> supportTypeBlocks) {
+        this.supportTypeBlocks = supportTypeBlocks;
+    }
+
+    public void addSupportTypeBlocks(String type){
+        this.supportTypeBlocks.add(type);
     }
 
     public void setEquipment(Map<String, Integer> equipment) {
@@ -264,7 +272,7 @@ public class Unit {
     public double getCasualtyTrickleback() {
         return casualtyTrickleback;
     }
-    
+
     public void setCasualtyTrickleback(double casualtyTrickleback) {
         this.casualtyTrickleback = casualtyTrickleback;
     }

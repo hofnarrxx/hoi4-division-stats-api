@@ -1,4 +1,4 @@
-package com.hofnarrxx.hoi4_unit_stats_api.parser;
+package com.hofnarrxx.hoi4_unit_stats_api.parser.equipment_parser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +30,25 @@ public class Equipment {
     public Equipment(String id) {
         this.id = id;
         this.type = new ArrayList<>();
+    }
+
+    public Equipment(Equipment other){
+        id = other.id;
+        year = other.year;
+        type = other.type;
+        archetype = other.archetype;
+        reliability = other.reliability;
+        maximumSpeed = other.maximumSpeed;
+        buildCostIc = other.buildCostIc;
+        fuelConsumption = other.fuelConsumption;
+        defense = other.defense;
+        breakthrough = other.breakthrough;
+        hardness = other.hardness;
+        armorValue = other.armorValue;
+        softAttack = other.softAttack;
+        hardAttack = other.hardAttack;
+        airAttack = other.airAttack;
+        apAttack = other.apAttack;
     }
 
     public String getId() {
@@ -177,7 +196,8 @@ public class Equipment {
         this.isArchetype = isArchetype;
     }
 
-    public void upgrage(Equipment modernEq){
+    public void upgrade(Equipment modernEq){
+        setId(modernEq.getId());
         setYear(modernEq.getYear() != 0 ? modernEq.getYear() : year);
         setDefense(modernEq.getDefense() != 0 ? modernEq.getDefense() : defense);
         setBreakthrough(modernEq.getBreakthrough() != 0 ? modernEq.getBreakthrough() : breakthrough);

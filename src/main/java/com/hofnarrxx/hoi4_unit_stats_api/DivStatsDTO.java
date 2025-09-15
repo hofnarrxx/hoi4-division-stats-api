@@ -173,6 +173,10 @@ public class DivStatsDTO {
         this.equipment = equipment;
     }
 
+    public void addEquipment(String name, int amount){
+        this.equipment.put(name, amount);
+    }
+
     public Map<TerrainType, TerrainModifier> getTerrainModifiers() {
         return terrainModifiers;
     }

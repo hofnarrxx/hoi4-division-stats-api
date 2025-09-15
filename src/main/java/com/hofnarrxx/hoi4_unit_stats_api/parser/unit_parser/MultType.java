@@ -1,4 +1,4 @@
-package com.hofnarrxx.hoi4_unit_stats_api.parser;
+package com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser;
 
 public class MultType {
     String stat;

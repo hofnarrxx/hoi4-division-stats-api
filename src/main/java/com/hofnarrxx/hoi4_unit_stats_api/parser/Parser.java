@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Parser {
-    static Map<String, Integer> parseKeyValueIntBlock(String block) {
+    protected static Map<String, Integer> parseKeyValueIntBlock(String block) {
         Map<String, Integer> map = new HashMap<>();
         String[] lines = block.split("\n");
         for (String line : lines) {
@@ -20,26 +20,19 @@ public class Parser {
         return map;
     }
 
-    static Map<String, String> splitTopLevelBlocks(String input) {
-        // Map<String, String> map = new LinkedHashMap<>();
-        // Pattern pattern = Pattern.compile("(\\w+)\\s*=\\s*\\{");
-        // Matcher matcher = pattern.matcher(block);
-
-        // while (matcher.find()) {
-        // String key = matcher.group(1);
-        // int start = matcher.end() - 1;
-        // int end = findMatchingBrace(block, start);
-        // String subBlock = block.substring(start + 1, end).trim();
-        // map.put(key, subBlock);
-        // }
-        // return map;
+    protected static Map<String, String> splitTopLevelBlocks(String input) {
         Map<String, String> blocks = new LinkedHashMap<>();
         int i = 0;
         while (i < input.length()) {
             // Skip whitespace
             while (i < input.length() && Character.isWhitespace(input.charAt(i)))
                 i++;
-
+            // Skip lines starting with '@'
+            if (i < input.length() && input.charAt(i) == '@') {
+                while (i < input.length() && input.charAt(i) != '\n' && input.charAt(i) != '\r')
+                    i++;
+                continue;
+            }
             // Find the key
             int keyStart = i;
             while (i < input.length() && (Character.isLetterOrDigit(input.charAt(i)) || input.charAt(i) == '_'))
@@ -48,7 +41,7 @@ public class Parser {
                 break; // no more keys
 
             String key = input.substring(keyStart, i).trim();
-
+           
             // Skip spaces and '='
             while (i < input.length() && (input.charAt(i) == ' ' || input.charAt(i) == '='))
                 i++;
@@ -69,7 +62,7 @@ public class Parser {
         return blocks;
     }
 
-    static int findMatchingBrace(String text, int openIndex) {
+    protected static int findMatchingBrace(String text, int openIndex) {
         int level = 1;
         for (int i = openIndex + 1; i < text.length(); i++) {
             if (text.charAt(i) == '{')
@@ -82,7 +75,7 @@ public class Parser {
         return -1;
     }
 
-    static String extractBlock(String key, String input) {
+    protected static String extractBlock(String key, String input) {
         Pattern pattern = Pattern.compile(key + "\\s*=\\s*\\{");
         Matcher matcher = pattern.matcher(input);
         if (!matcher.find())
@@ -92,7 +85,11 @@ public class Parser {
         return input.substring(start + 1, end).trim();
     }
 
-    static String removeComments(String input) {
+    protected static String removeComments(String input) {
         return input.replaceAll("(?m)#.*$", ""); // removes everything after # on each line
+    }
+
+    protected static int countLines(String s) {
+        return (int) s.lines().count();
     }
 }

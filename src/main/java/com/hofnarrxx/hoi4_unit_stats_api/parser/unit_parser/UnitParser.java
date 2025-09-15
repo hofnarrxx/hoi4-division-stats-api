@@ -1,8 +1,12 @@
-package com.hofnarrxx.hoi4_unit_stats_api.parser;
+package com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser;
 
 import java.util.*;
 
 import org.springframework.stereotype.Component;
+
+import com.hofnarrxx.hoi4_unit_stats_api.parser.Parser;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainModifier;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainType;
 
 @Component
 public class UnitParser extends Parser {
@@ -137,7 +141,7 @@ public class UnitParser extends Parser {
                 switch (key) {
                     case "group" -> unit.setGroup(value);
                     case "abbreviation" -> unit.setId(value.replace("\"", ""));
-                    case "same_support_type" -> unit.setSupportTypeBlock(value);
+                    case "same_support_type" -> unit.addSupportTypeBlocks(value);
                     case "combat_width" -> unit.setCombatWidth(Double.parseDouble(value));
                     case "max_strength" -> unit.setHp(Double.parseDouble(value));
                     case "max_organisation" -> unit.setOrg(Double.parseDouble(value));

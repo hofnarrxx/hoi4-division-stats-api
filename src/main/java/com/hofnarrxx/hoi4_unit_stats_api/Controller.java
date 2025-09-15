@@ -8,9 +8,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hofnarrxx.hoi4_unit_stats_api.parser.Equipment;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.Module;
-import com.hofnarrxx.hoi4_unit_stats_api.parser.Unit;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.equipment_parser.Equipment;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.tech_parser.Technology;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.Unit;
 
 @RestController
 public class Controller {
@@ -37,6 +38,12 @@ public class Controller {
     @GetMapping("/modules")
     public ResponseEntity<List<Module>> getModules() {
         List<Module> stats = statsService.getModuleList();
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/technologies")
+    public ResponseEntity<List<Technology>> getTechnologies(){
+        List<Technology> stats = statsService.getTechList();
         return ResponseEntity.ok(stats);
     }
 

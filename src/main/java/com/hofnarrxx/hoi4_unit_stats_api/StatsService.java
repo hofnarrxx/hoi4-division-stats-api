@@ -10,23 +10,26 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.hofnarrxx.hoi4_unit_stats_api.parser.BattalionMult;
-import com.hofnarrxx.hoi4_unit_stats_api.parser.Equipment;
-import com.hofnarrxx.hoi4_unit_stats_api.parser.EquipmentParser;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.FileUtil;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.Module;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.ModuleParser;
-import com.hofnarrxx.hoi4_unit_stats_api.parser.MultType;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainModifier;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainType;
-import com.hofnarrxx.hoi4_unit_stats_api.parser.Unit;
-import com.hofnarrxx.hoi4_unit_stats_api.parser.UnitParser;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.equipment_parser.Equipment;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.equipment_parser.EquipmentParser;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.tech_parser.TechParser;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.tech_parser.Technology;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.BattalionMult;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.MultType;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.Unit;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.UnitParser;
 
 @Service
 public class StatsService {
     List<Unit> unitList = new ArrayList<>();
     List<Equipment> equipmentList = new ArrayList<>();
     List<Module> moduleList = new ArrayList<>();
+    List<Technology> techList = new ArrayList<>();
 
     public StatsService() {
         String unitsFolderPath = "src/main/resources/data/units";
@@ -52,6 +55,14 @@ public class StatsService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        String techFolderPath = "src/main/resources/data/technologies";
+        try{
+            List<String> techFiles = FileUtil.readFolder(techFolderPath);
+            techFiles.forEach(file -> techList.addAll(TechParser.parseTechnologies(file)));
+        } catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public List<Unit> getUnitList() {
@@ -64,6 +75,10 @@ public class StatsService {
 
     public List<Module> getModuleList() {
         return moduleList;
+    }
+
+    public List<Technology> getTechList(){
+        return techList;
     }
 
     public DivStatsDTO calculateDivisionStats(DivisionDTO div) {
@@ -108,9 +123,10 @@ public class StatsService {
                 int fj = j;
                 Unit anotherSupport = unitList.stream().filter(u -> u.getId().equals(div.getSupportCompanies().get(fj)))
                         .findFirst().orElse(null);
-                if (support.getSupportTypeBlock() != null
-                        && anotherSupport.getName().contains(support.getSupportTypeBlock())) {
-                    // error
+                for (String blockedType : support.getSupportTypeBlocks()) {
+                    if (anotherSupport.getName().contains(blockedType)) {
+                        // error
+                    }
                 }
             }
         }
@@ -163,13 +179,12 @@ public class StatsService {
                 }
             }
             // factors handling
-            for(Map.Entry<String,Double> entry : supportCompany.getFactors().entrySet()){
-                if(factors.containsKey(entry.getKey())){
+            for (Map.Entry<String, Double> entry : supportCompany.getFactors().entrySet()) {
+                if (factors.containsKey(entry.getKey())) {
                     double sum = factors.get(entry.getKey());
                     factors.put(entry.getKey(), sum + entry.getValue());
-                }
-                else{
-                     factors.put(entry.getKey(), entry.getValue());
+                } else {
+                    factors.put(entry.getKey(), entry.getValue());
                 }
             }
         }
@@ -195,13 +210,14 @@ public class StatsService {
             orgSum += BattalionMult.apply(multipliers, supportCompany.getOrg(), "max_organisation");
             recoveryRateSum += BattalionMult.apply(multipliers, supportCompany.getRecoveryRate(), "default_morale");
             divStatsDTO.setWeight(divStatsDTO.getWeight() + supportCompany.getWeight());
-            divStatsDTO
-                    .setSupplyConsumption(divStatsDTO.getSupplyConsumption() + BattalionMult.apply(multipliers,
-                            supportCompany.getSupplyConsumption(), "supply_consumption"));
             divStatsDTO.setCombatWidth(divStatsDTO.getCombatWidth() + supportCompany.getCombatWidth());
-            divStatsDTO.setSuppression(divStatsDTO.getSuppression()+ supportCompany.getSuppression()*(1+factors.getOrDefault("suppresion", 0.0)));
-            divStatsDTO.setSupplyConsumption(divStatsDTO.getSupplyConsumption()+ supportCompany.getSupplyConsumption()*(1+factors.getOrDefault("supply_consumption", 0.0)));
-            divStatsDTO.setCasualtyTrickleback(divStatsDTO.getCasualtyTrickleback()+supportCompany.getCasualtyTrickleback());
+            divStatsDTO.setSuppression(divStatsDTO.getSuppression()
+                    + supportCompany.getSuppression() * (1 + factors.getOrDefault("suppresion", 0.0)));
+            divStatsDTO.setSupplyConsumption(divStatsDTO.getSupplyConsumption()
+                    + supportCompany.getSupplyConsumption() * (1 + factors.getOrDefault("supply_consumption", 0.0)));
+            divStatsDTO.setCasualtyTrickleback(
+                    divStatsDTO.getCasualtyTrickleback() + supportCompany.getCasualtyTrickleback());
+            divStatsDTO.setRecon(divStatsDTO.getRecon() + supportCompany.getRecon());
             // find matching equipment
             List<Equipment> battalionEquipment = new ArrayList<>();
             Map<Equipment, Integer> battalionEquipmentMap = new HashMap<>();
@@ -212,9 +228,10 @@ public class StatsService {
                         && eq.getArchetype().equals(archetype.getId()) && eq.getYear() <= div.getYear())
                         .collect(Collectors.toList());
                 temp.stream().max((eq1, eq2) -> Integer.compare(eq1.getYear(), eq2.getYear())).ifPresent(eq -> {
-                    archetype.upgrage(eq);
-                    battalionEquipment.add(archetype);
-                    battalionEquipmentMap.put(archetype, entry.getValue());
+                    Equipment upgraded = new Equipment(archetype);
+                    upgraded.upgrade(eq);
+                    battalionEquipment.add(upgraded);
+                    battalionEquipmentMap.put(upgraded, entry.getValue());
                 });
             }
             // stats from equipment
@@ -225,28 +242,30 @@ public class StatsService {
                 divStatsDTO.setSoftAttack(divStatsDTO.getSoftAttack() + BattalionMult.apply(multipliers,
                         eq.getSoftAttack() * (1 + nerfs.getOrDefault("soft_attack", 0.0)), "soft_attack"));
                 divStatsDTO.setHardAttack(divStatsDTO.getHardAttack() + BattalionMult.apply(multipliers,
-                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("hard_attack", 0.0)), "hard_attack"));
+                        eq.getHardAttack() * (1 + nerfs.getOrDefault("hard_attack", 0.0)), "hard_attack"));
                 divStatsDTO.setAirAttack(divStatsDTO.getAirAttack() + BattalionMult.apply(multipliers,
-                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("air_attack", 0.0)), "air_attack"));
+                        eq.getAirAttack() * (1 + nerfs.getOrDefault("air_attack", 0.0)), "air_attack"));
                 double currApAttack = BattalionMult.apply(multipliers,
-                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("ap_attack", 0.0)), "ap_attack");
+                        eq.getApAttack() * (1 + nerfs.getOrDefault("ap_attack", 0.0)), "ap_attack");
                 apAttackSum += currApAttack;
                 apAttackMax = currApAttack > apAttackMax ? currApAttack : apAttackMax;
                 divStatsDTO.setDefense(divStatsDTO.getDefense() + BattalionMult.apply(multipliers,
-                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("defense", 0.0)), "defense"));
+                        eq.getDefense() * (1 + nerfs.getOrDefault("defense", 0.0)), "defense"));
                 divStatsDTO.setBreakthrough(divStatsDTO.getBreakthrough() + BattalionMult.apply(multipliers,
-                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("breakthrough", 0.0)), "breakthrough"));
+                        eq.getBreakthrough() * (1 + nerfs.getOrDefault("breakthrough", 0.0)), "breakthrough"));
                 hardnessSum += eq.getHardness();
                 double currArmor = BattalionMult.apply(multipliers,
-                        eq.getSoftAttack() * (1 + nerfs.getOrDefault("armor_value", 0.0)), "armor_value");
+                        eq.getArmorValue() * (1 + nerfs.getOrDefault("armor_value", 0.0)), "armor_value");
                 armorSum += currArmor;
                 armorMax = currArmor > armorMax ? currArmor : armorMax;
-                divStatsDTO.setFuelConsumption(divStatsDTO.getFuelConsumption()+eq.getFuelConsumption()*(1+factors.getOrDefault("fuel_consumption", 0.0)));
+                divStatsDTO.setFuelConsumption(divStatsDTO.getFuelConsumption()
+                        + eq.getFuelConsumption() * (1 + factors.getOrDefault("fuel_consumption", 0.0)));
             }
             // cost
             for (Map.Entry<Equipment, Integer> entry : battalionEquipmentMap.entrySet()) {
                 divStatsDTO.setBuildCostIc(
                         divStatsDTO.getBuildCostIc() + entry.getKey().getBuildCostIc() * entry.getValue());
+                divStatsDTO.addEquipment(entry.getKey().getId(), entry.getValue());
             }
             divStatsDTO.setManpower(divStatsDTO.getManpower() + supportCompany.getManpower());
             if (supportCompany.getTrainingTime() > divStatsDTO.getTrainingTime())
@@ -281,12 +300,12 @@ public class StatsService {
             orgSum += BattalionMult.apply(multipliers, battalion.getOrg(), "max_organisation");
             recoveryRateSum += BattalionMult.apply(multipliers, battalion.getRecoveryRate(), "default_morale");
             divStatsDTO.setWeight(divStatsDTO.getWeight() + battalion.getWeight());
-            divStatsDTO
-                    .setSupplyConsumption(divStatsDTO.getSupplyConsumption() + BattalionMult.apply(multipliers,
-                            battalion.getSupplyConsumption(), "supply_consumption"));
             divStatsDTO.setCombatWidth(divStatsDTO.getCombatWidth() + battalion.getCombatWidth());
-            divStatsDTO.setSuppression(divStatsDTO.getSuppression()+ battalion.getSuppression()*(1+factors.getOrDefault("suppresion", 0.0)));
-            divStatsDTO.setSupplyConsumption(divStatsDTO.getSupplyConsumption()+ battalion.getSupplyConsumption()*(1+factors.getOrDefault("supply_consumption", 0.0)));
+            divStatsDTO.setSuppression(divStatsDTO.getSuppression()
+                    + battalion.getSuppression() * (1 + factors.getOrDefault("suppresion", 0.0)));
+            divStatsDTO.setSupplyConsumption(divStatsDTO.getSupplyConsumption()
+                    + battalion.getSupplyConsumption() * (1 + factors.getOrDefault("supply_consumption", 0.0)));
+            divStatsDTO.setRecon(divStatsDTO.getRecon() + battalion.getRecon());
             // find matching equipment
             List<Equipment> battalionEquipment = new ArrayList<>();
             Map<Equipment, Integer> battalionEquipmentMap = new HashMap<>();
@@ -297,9 +316,11 @@ public class StatsService {
                         && eq.getArchetype().equals(archetype.getId()) && eq.getYear() <= div.getYear())
                         .collect(Collectors.toList());
                 temp.stream().max((eq1, eq2) -> Integer.compare(eq1.getYear(), eq2.getYear())).ifPresent(eq -> {
-                    archetype.upgrage(eq);
-                    battalionEquipment.add(archetype);
-                    battalionEquipmentMap.put(archetype, entry.getValue());
+                    Equipment upgraded = new Equipment(archetype);
+                    upgraded.upgrade(eq);
+                    System.out.println(upgraded.getId()+", "+upgraded.getSoftAttack());
+                    battalionEquipment.add(upgraded);
+                    battalionEquipmentMap.put(upgraded, entry.getValue());
                 });
             }
             // stats from equipment
@@ -310,28 +331,30 @@ public class StatsService {
                 divStatsDTO.setSoftAttack(divStatsDTO.getSoftAttack() + BattalionMult.apply(multipliers,
                         eq.getSoftAttack(), "soft_attack"));
                 divStatsDTO.setHardAttack(divStatsDTO.getHardAttack() + BattalionMult.apply(multipliers,
-                        eq.getSoftAttack(), "hard_attack"));
+                        eq.getHardAttack(), "hard_attack"));
                 divStatsDTO.setAirAttack(divStatsDTO.getAirAttack() + BattalionMult.apply(multipliers,
-                        eq.getSoftAttack(), "air_attack"));
+                        eq.getAirAttack(), "air_attack"));
                 double currApAttack = BattalionMult.apply(multipliers,
-                        eq.getSoftAttack(), "ap_attack");
+                        eq.getApAttack(), "ap_attack");
                 apAttackSum += currApAttack;
                 apAttackMax = currApAttack > apAttackMax ? currApAttack : apAttackMax;
                 divStatsDTO.setDefense(divStatsDTO.getDefense() + BattalionMult.apply(multipliers,
-                        eq.getSoftAttack(), "defense"));
+                        eq.getDefense(), "defense"));
                 divStatsDTO.setBreakthrough(divStatsDTO.getBreakthrough() + BattalionMult.apply(multipliers,
-                        eq.getSoftAttack(), "breakthrough"));
+                        eq.getBreakthrough(), "breakthrough"));
                 hardnessSum += eq.getHardness();
                 double currArmor = BattalionMult.apply(multipliers,
-                        eq.getSoftAttack(), "armor_value");
+                        eq.getArmorValue(), "armor_value");
                 armorSum += currArmor;
                 armorMax = currArmor > armorMax ? currArmor : armorMax;
-                divStatsDTO.setFuelConsumption(divStatsDTO.getFuelConsumption()+eq.getFuelConsumption()*(1+factors.getOrDefault("fuel_consumption", 0.0)));
+                divStatsDTO.setFuelConsumption(divStatsDTO.getFuelConsumption()
+                        + eq.getFuelConsumption() * (1 + factors.getOrDefault("fuel_consumption", 0.0)));
             }
             // cost
             for (Map.Entry<Equipment, Integer> entry : battalionEquipmentMap.entrySet()) {
                 divStatsDTO.setBuildCostIc(
                         divStatsDTO.getBuildCostIc() + entry.getKey().getBuildCostIc() * entry.getValue());
+                divStatsDTO.addEquipment(entry.getKey().getId(), entry.getValue());
             }
             divStatsDTO.setManpower(divStatsDTO.getManpower() + battalion.getManpower());
             if (battalion.getTrainingTime() > divStatsDTO.getTrainingTime())
