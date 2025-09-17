@@ -9,6 +9,8 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 import com.hofnarrxx.hoi4_unit_stats_api.parser.Parser;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.BattalionMult;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.MultType;
 
 @Component
 public class TechParser extends Parser {
@@ -65,10 +67,6 @@ public class TechParser extends Parser {
             String value = parts[1].trim();
             if (value.equals("{")) {
                 if (SKIP_BLOCKS.contains(key)) {
-                    // int startIndex = block.indexOf("{", block.indexOf(line));
-                    // int endIndex = findMatchingBrace(block, startIndex);
-                    // i += countLines(block.substring(startIndex, endIndex));
-                    // continue;
                     int depth = 1;
                     while (i + 1 < lines.length && depth > 0) {
                         i++;
@@ -91,12 +89,38 @@ public class TechParser extends Parser {
                         continue;
                     if (nextLine.equals("}"))
                         break;
-                    System.out.println(nextLine);
-                    String[] effectParts = nextLine.split("=", 2);
-                    try {
-                        effects.put(effectParts[0].trim(), Double.parseDouble(effectParts[1].trim()));
-                    } catch (NumberFormatException ignored) {
-                        System.out.println("non-numeric value");
+                    if (nextLine.startsWith("battalion_mult")) {
+                        BattalionMult bm = new BattalionMult();
+                        MultType mt = new MultType();
+                        while (i < lines.length) {
+                            String nextLineBM = lines[i++].trim();
+                            if (nextLineBM.isEmpty() || nextLineBM.startsWith("#")
+                                    || nextLineBM.startsWith("display_as_percentage"))
+                                continue;
+                            if (nextLineBM.equals("}"))
+                                break;
+                            if (nextLineBM.startsWith("add")) {
+                                mt.setAdditive(true);
+                                continue;
+                            }
+                            String[] partsBM = nextLineBM.split("=", 2);
+                            String keyBM = partsBM[0].trim();
+                            String valueBM = partsBM[1].trim();
+                            if (keyBM.equals("category")) {
+                                bm.setCategory(valueBM);
+                            } else {
+                                mt.setStat(keyBM);
+                                bm.addMultiplier(mt, Double.parseDouble(valueBM));
+                            }
+                        }
+                        tech.addMult(key, bm);
+                    } else {
+                        String[] effectParts = nextLine.split("=", 2);
+                        try {
+                            effects.put(effectParts[0].trim(), Double.parseDouble(effectParts[1].trim()));
+                        } catch (NumberFormatException ignored) {
+                            System.out.println("non-numeric value");
+                        }
                     }
                 }
                 tech.addEffect(key, effects);
@@ -109,7 +133,6 @@ public class TechParser extends Parser {
                 }
             }
         }
-        System.out.println("end");
         return tech;
     }
 }

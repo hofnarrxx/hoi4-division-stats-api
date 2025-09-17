@@ -22,5 +22,13 @@ public class MultType {
     public void setAdditive(Boolean additive) {
         this.additive = additive;
     }
+
+    @Override
+    public String toString(){
+        if(additive){
+            return stat+" (add)";
+        }
+        return stat;
+    }
     
 }

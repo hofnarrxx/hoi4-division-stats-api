@@ -62,7 +62,7 @@ public class UnitParser extends Parser {
                     if (nextLine.contains("category")) {
                         battalionMult.setCategory(partsMult[1].trim());
                     } else {
-                        multType.setStat(parts[0].trim());
+                        multType.setStat(partsMult[0].trim());
                         battalionMult.addMultiplier(multType, Double.parseDouble(partsMult[1]));
                     }
                 }

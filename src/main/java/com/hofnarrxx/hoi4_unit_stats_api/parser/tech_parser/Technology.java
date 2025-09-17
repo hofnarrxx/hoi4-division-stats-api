@@ -3,14 +3,19 @@ package com.hofnarrxx.hoi4_unit_stats_api.parser.tech_parser;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.BattalionMult;
+
 public class Technology {
     private String id;
     private int year;
-    private Map<String, Map<String, Double>> effects;
+    private Map<String, Map<String, Double>> effects; // e.g. maintenance_company = {reliability_factor = 0.05}
+    private Map<String, BattalionMult> mults; // e.g. maintenance_company = {battalion_mult = {...}}
+
 
     public Technology(String id){
         this.id = id;
         effects = new HashMap<>();
+        mults = new HashMap<>();
     }
 
     public String getId() {
@@ -40,5 +45,16 @@ public class Technology {
     public void addEffect(String receiver, Map<String, Double> effect){
         this.effects.put(receiver, effect);
     }
+
+    public Map<String, BattalionMult> getMults() {
+        return mults;
+    }
+
+    public void setMults(Map<String, BattalionMult> mults) {
+        this.mults = mults;
+    }
     
+    public void addMult(String receiver, BattalionMult mult){
+        this.mults.put(receiver, mult);
+    }
 }
