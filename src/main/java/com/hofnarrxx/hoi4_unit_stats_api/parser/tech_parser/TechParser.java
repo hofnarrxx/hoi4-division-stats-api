@@ -9,6 +9,8 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 import com.hofnarrxx.hoi4_unit_stats_api.parser.Parser;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainModifier;
+import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainType;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.BattalionMult;
 import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.MultType;
 
@@ -89,23 +91,24 @@ public class TechParser extends Parser {
                         continue;
                     if (nextLine.equals("}"))
                         break;
+                    String[] nextLineParts = nextLine.split("=", 2);
                     if (nextLine.startsWith("battalion_mult")) {
                         BattalionMult bm = new BattalionMult();
                         MultType mt = new MultType();
                         while (i < lines.length) {
-                            String nextLineBM = lines[i++].trim();
-                            if (nextLineBM.isEmpty() || nextLineBM.startsWith("#")
-                                    || nextLineBM.startsWith("display_as_percentage"))
+                            nextLine = lines[i++].trim();
+                            if (nextLine.isEmpty() || nextLine.startsWith("#")
+                                    || nextLine.startsWith("display_as_percentage"))
                                 continue;
-                            if (nextLineBM.equals("}"))
+                            if (nextLine.equals("}"))
                                 break;
-                            if (nextLineBM.startsWith("add")) {
+                            if (nextLine.startsWith("add")) {
                                 mt.setAdditive(true);
                                 continue;
                             }
-                            String[] partsBM = nextLineBM.split("=", 2);
-                            String keyBM = partsBM[0].trim();
-                            String valueBM = partsBM[1].trim();
+                            nextLineParts = nextLine.split("=", 2);
+                            String keyBM = nextLineParts[0].trim();
+                            String valueBM = nextLineParts[1].trim();
                             if (keyBM.equals("category")) {
                                 bm.setCategory(valueBM);
                             } else {
@@ -114,6 +117,28 @@ public class TechParser extends Parser {
                             }
                         }
                         tech.addMult(key, bm);
+                    } else if (TerrainType.isValidTerrain(nextLineParts[0].trim())) {
+                        String terrainType = nextLineParts[0].trim().toUpperCase();
+                        double attack = 0, defense = 0, movement = 0;
+                        while (i < lines.length) {
+                            nextLine = lines[i++].trim();
+                            //System.out.println(id+", "+key+", "+nextLine);
+                            if (nextLine.isEmpty() || nextLine.startsWith("#"))
+                                continue;
+                            if (nextLine.equals("}"))
+                                break;
+                            nextLineParts = nextLine.split("=", 2);
+                            if (nextLineParts[0].trim().equals("attack")) {
+                                attack = Double.parseDouble(nextLineParts[1].trim());
+                                System.out.println("modified attack, "+id+", "+key+", "+nextLineParts[1].trim());
+                            } else if (nextLineParts[0].trim().equals("defense") || nextLineParts[0].trim().equals("defence")) {
+                                defense = Double.parseDouble(nextLineParts[1].trim());
+                                System.out.println("modified defense, "+id+", "+key+", "+nextLineParts[1].trim());
+                            } else {
+                                movement = Double.parseDouble(nextLineParts[1].trim());
+                            }
+                        }
+                        tech.addTerrainModifier(key,new TerrainModifier(TerrainType.valueOf(terrainType),attack, defense, movement));
                     } else {
                         String[] effectParts = nextLine.split("=", 2);
                         try {

@@ -10,5 +10,13 @@ public enum TerrainType {
     FORT,
     RIVER,
     AMPHIBIOUS,
-    DESERT
+    DESERT;
+    public static boolean isValidTerrain(String terrain){
+        for(TerrainType tr : TerrainType.values()){
+            if(tr.name().equalsIgnoreCase(terrain)){
+                return true;
+            }
+        }
+        return false;
+    }
 }

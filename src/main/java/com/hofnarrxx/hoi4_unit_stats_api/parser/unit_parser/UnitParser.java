@@ -10,6 +10,7 @@ import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainType;
 
 @Component
 public class UnitParser extends Parser {
+
     public static List<Unit> parseUnits(String input) {
         List<Unit> unitList = new ArrayList<>();
         input = removeComments(input);
@@ -102,9 +103,7 @@ public class UnitParser extends Parser {
                     String[] eqParts = nextLine.split("=", 2);
                     unit.addEquipment(eqParts[0].trim(), Integer.parseInt(eqParts[1].trim()));
                 }
-            } else if ((key.equals("forest") || key.equals("hills") || key.equals("mountain") || key.equals("jungle") ||
-                    key.equals("marsh") || key.equals("fort") || key.equals("river") || key.equals("amphibious") ||
-                    key.equals("plains") || key.equals("desert")) && value.equals("{")) {
+            } else if (TerrainType.isValidTerrain(key) && value.equals("{")) {
                 double attack = 0, defense = 0, movement = 0;
                 i++;
                 while (i < lines.length) {
@@ -116,24 +115,24 @@ public class UnitParser extends Parser {
                     String[] terrainParts = nextLine.split("=", 2);
                     if (terrainParts[0].trim().equals("attack")) {
                         attack = Double.parseDouble(terrainParts[1].trim());
-                    } else if (terrainParts[0].trim().equals("defense")) {
+                    } else if (terrainParts[0].trim().equals("defense") || terrainParts[0].trim().equals("defence")) {
                         defense = Double.parseDouble(terrainParts[1].trim());
                     } else {
                         movement = Double.parseDouble(terrainParts[1].trim());
                     }
-                    unit.addTerrainModifier(TerrainType.valueOf(key.toUpperCase()),
-                            new TerrainModifier(attack, defense, movement));
                     i++;
                 }
+                unit.addTerrainModifier(
+                        new TerrainModifier(TerrainType.valueOf(key.toUpperCase()), attack, defense, movement));
             } else if (key.matches("^.+_factor$")) {
                 String[] factorParts = key.trim().split("_");
                 StringBuilder sb = new StringBuilder();
-                for(String part : factorParts){
-                    if(part.equals("factor")){
-                        sb.deleteCharAt(sb.length()-1);
+                for (String part : factorParts) {
+                    if (part.equals("factor")) {
+                        sb.deleteCharAt(sb.length() - 1);
                         break;
                     }
-                    sb.append(part+"_");
+                    sb.append(part + "_");
                 }
                 unit.getFactors().put(sb.toString(), Double.parseDouble(value.trim()));
             } else {

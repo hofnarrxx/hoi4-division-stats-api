@@ -1,10 +1,10 @@
 package com.hofnarrxx.hoi4_unit_stats_api;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainModifier;
-import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainType;
 
 public class DivStatsDTO {
     private double combatWidth;
@@ -25,7 +25,7 @@ public class DivStatsDTO {
     private double equipmentCapture;
     private double casualtyTrickleback;
     private Map<String, Integer> equipment;
-    private Map<TerrainType, TerrainModifier> terrainModifiers;
+    private ArrayList<TerrainModifier> terrainModifiers;
 
     // private double reliability;
     private double maximumSpeed;
@@ -42,7 +42,7 @@ public class DivStatsDTO {
 
     public DivStatsDTO() {
         this.equipment = new HashMap<>();
-        this.terrainModifiers = new HashMap<>();
+        this.terrainModifiers = new ArrayList<>();
     }
 
     public double getCombatWidth() {
@@ -177,11 +177,11 @@ public class DivStatsDTO {
         this.equipment.put(name, amount);
     }
 
-    public Map<TerrainType, TerrainModifier> getTerrainModifiers() {
+    public ArrayList<TerrainModifier> getTerrainModifiers() {
         return terrainModifiers;
     }
 
-    public void setTerrainModifiers(Map<TerrainType, TerrainModifier> terrainModifiers) {
+    public void setTerrainModifiers(ArrayList<TerrainModifier> terrainModifiers) {
         this.terrainModifiers = terrainModifiers;
     }
 

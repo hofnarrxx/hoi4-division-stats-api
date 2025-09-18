@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainModifier;
-import com.hofnarrxx.hoi4_unit_stats_api.parser.TerrainType;
 
 public class Unit {
     private String name;
@@ -28,7 +27,7 @@ public class Unit {
     private double entrenchment;
     private double casualtyTrickleback;
     private Map<String, Integer> equipment;
-    private Map<TerrainType, TerrainModifier> terrainModifiers;
+    private ArrayList<TerrainModifier> terrainModifiers;
     private Map<String, Double> supportNerfs;
     private ArrayList<BattalionMult> battalionMults; // support companies buffs for specific categories, can be additive or multiplicative
     private Map<String, Double> factors; // important abilities of support companies
@@ -39,10 +38,7 @@ public class Unit {
         this.categories = new ArrayList<>();
         this.supportTypeBlocks = new ArrayList<>();
         this.equipment = new HashMap<>();
-        this.terrainModifiers = new HashMap<>();
-        for(TerrainType type : TerrainType.values()){
-            terrainModifiers.put(type, new TerrainModifier(0, 0, 0));
-        }
+        this.terrainModifiers = new ArrayList<>();
         this.supportNerfs = new HashMap<>();
         this.battalionMults = new ArrayList<>();
         this.factors = new HashMap<>();
@@ -193,7 +189,7 @@ public class Unit {
         this.equipment = equipment;
     }
 
-    public void setTerrainModifiers(Map<TerrainType, TerrainModifier> terrainModifiers) {
+    public void setTerrainModifiers(ArrayList<TerrainModifier> terrainModifiers) {
         this.terrainModifiers = terrainModifiers;
     }
 
@@ -205,12 +201,12 @@ public class Unit {
         this.equipment.put(equipment, amount);
     }
 
-    public Map<TerrainType, TerrainModifier> getTerrainModifiers(){
+    public ArrayList<TerrainModifier> getTerrainModifiers(){
         return terrainModifiers;
     }
 
-    public void addTerrainModifier(TerrainType terrainType, TerrainModifier terrainModifier) {
-        this.terrainModifiers.put(terrainType, terrainModifier);
+    public void addTerrainModifier(TerrainModifier terrainModifier) {
+        this.terrainModifiers.add(terrainModifier);
     }
 
     @Override

@@ -2,8 +2,6 @@ package com.hofnarrxx.hoi4_unit_stats_api;
 
 import java.util.ArrayList;
 
-import com.hofnarrxx.hoi4_unit_stats_api.parser.unit_parser.Unit;
-
 public class DivisionDTO {
     private ArrayList<String> battalions;
     private ArrayList<String> supportCompanies;

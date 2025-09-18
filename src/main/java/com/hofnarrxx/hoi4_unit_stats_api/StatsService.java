@@ -57,10 +57,10 @@ public class StatsService {
         }
 
         String techFolderPath = "src/main/resources/data/technologies";
-        try{
+        try {
             List<String> techFiles = FileUtil.readFolder(techFolderPath);
             techFiles.forEach(file -> techList.addAll(TechParser.parseTechnologies(file)));
-        } catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -77,7 +77,7 @@ public class StatsService {
         return moduleList;
     }
 
-    public List<Technology> getTechList(){
+    public List<Technology> getTechList() {
         return techList;
     }
 
@@ -152,9 +152,9 @@ public class StatsService {
         int battalionCount = div.getBattalionCount();
         int supportCompaniesCount = div.getSupportCompaniesCount();
         int unitCount = battalionCount + supportCompaniesCount;
-        Map<TerrainType, TerrainModifier> supportTerrainModifiers = new HashMap<>();
-        Map<TerrainType, TerrainModifier> battalionsTerrainModifiersSum = new HashMap<>();
-        Map<TerrainType, TerrainModifier> divisionTerrainModifiers = new HashMap<>();
+        ArrayList<TerrainModifier> supportTerrainModifiers = new ArrayList<>();
+        ArrayList<TerrainModifier> battalionsTerrainModifiersSum = new ArrayList<>();
+        ArrayList<TerrainModifier> divisionTerrainModifiers = new ArrayList<>();
         double recoveryRateSum = 0;
         double apAttackSum = 0, apAttackMax = 0;
         double hardnessSum = 0;
@@ -271,12 +271,17 @@ public class StatsService {
             if (supportCompany.getTrainingTime() > divStatsDTO.getTrainingTime())
                 divStatsDTO.setTrainingTime(supportCompany.getTrainingTime());
             // terrain
-            for (Map.Entry<TerrainType, TerrainModifier> entry : supportCompany.getTerrainModifiers().entrySet()) {
-                if (supportTerrainModifiers.get(entry.getKey()) == null) {
-                    supportTerrainModifiers.put(entry.getKey(), entry.getValue());
-                } else {
-                    supportTerrainModifiers.put(entry.getKey(),
-                            supportTerrainModifiers.get(entry.getKey()).add(entry.getValue()));
+            for(TerrainModifier tm : supportCompany.getTerrainModifiers()){
+                boolean isInList = false;
+                for(TerrainModifier tm2 : supportTerrainModifiers){
+                    if(tm2.getTerrain().equals(tm.getTerrain())){
+                        tm2.add(tm);
+                        isInList = true;
+                        break;
+                    }
+                }
+                if(!isInList){
+                    supportTerrainModifiers.add(tm);
                 }
             }
         }
@@ -318,7 +323,7 @@ public class StatsService {
                 temp.stream().max((eq1, eq2) -> Integer.compare(eq1.getYear(), eq2.getYear())).ifPresent(eq -> {
                     Equipment upgraded = new Equipment(archetype);
                     upgraded.upgrade(eq);
-                    System.out.println(upgraded.getId()+", "+upgraded.getSoftAttack());
+                    System.out.println(upgraded.getId() + ", " + upgraded.getSoftAttack());
                     battalionEquipment.add(upgraded);
                     battalionEquipmentMap.put(upgraded, entry.getValue());
                 });
@@ -360,12 +365,17 @@ public class StatsService {
             if (battalion.getTrainingTime() > divStatsDTO.getTrainingTime())
                 divStatsDTO.setTrainingTime(battalion.getTrainingTime());
             // terrain
-            for (Map.Entry<TerrainType, TerrainModifier> entry : battalion.getTerrainModifiers().entrySet()) {
-                if (battalionsTerrainModifiersSum.get(entry.getKey()) == null) {
-                    battalionsTerrainModifiersSum.put(entry.getKey(), entry.getValue());
-                } else {
-                    battalionsTerrainModifiersSum.put(entry.getKey(),
-                            battalionsTerrainModifiersSum.get(entry.getKey()).add(entry.getValue()));
+            for(TerrainModifier tm : battalion.getTerrainModifiers()){
+                boolean isInList = false;
+                for(TerrainModifier tm2 : battalionsTerrainModifiersSum){
+                    if(tm2.getTerrain().equals(tm.getTerrain())){
+                        tm2.add(tm);
+                        isInList = true;
+                        break;
+                    }
+                }
+                if(!isInList){
+                    battalionsTerrainModifiersSum.add(tm);
                 }
             }
         }
@@ -382,14 +392,15 @@ public class StatsService {
         divStatsDTO.setReliabilityBonus(factors.getOrDefault("reliability", 0.0));
         // The net adjuster for a division is the average of its combat battalions
         // plus the sum of the adjusters of its support battalions.
-        for (Map.Entry<TerrainType, TerrainModifier> entry : battalionsTerrainModifiersSum.entrySet()) {
-            TerrainModifier battalionAverage = entry.getValue().divide(battalionCount);
-            TerrainModifier supportBonus = supportTerrainModifiers.get(entry.getKey());
-            if (supportBonus != null) {
-                divisionTerrainModifiers.put(entry.getKey(), battalionAverage.add(supportBonus));
-                continue;
+        for(TerrainModifier tm : battalionsTerrainModifiersSum){
+            TerrainModifier battalionAverage = tm.divide(battalionCount);
+            TerrainModifier supportBonus = supportTerrainModifiers.stream().filter( modifier -> modifier.getTerrain().equals(tm.getTerrain())).findFirst().orElse(null);
+            if(supportBonus != null){
+                divisionTerrainModifiers.add(battalionAverage.add(supportBonus));
             }
-            divisionTerrainModifiers.put(entry.getKey(), battalionAverage);
+            else{
+                divisionTerrainModifiers.add(battalionAverage);
+            }
         }
         divStatsDTO.setTerrainModifiers(divisionTerrainModifiers);
         return divStatsDTO;
