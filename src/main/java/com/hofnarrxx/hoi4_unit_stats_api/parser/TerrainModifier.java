@@ -25,22 +25,28 @@ public class TerrainModifier {
         return movementModifier;
     }
 
-    public TerrainType getTerrain(){
+    public TerrainType getTerrain() {
         return terrain;
     }
 
     @Override
     public String toString() {
-        return "{attack = " + attackModifier + ", " + "defense = " + defenseModifier + ", movement = "
+        return "terrain = " + terrain + ": " + "{attack = " + attackModifier + ", " + "defense = " + defenseModifier
+                + ", movement = "
                 + movementModifier + "}";
     }
 
-    public TerrainModifier add(TerrainModifier other){
-        return new TerrainModifier(terrain,attackModifier + other.attackModifier, defenseModifier + other.defenseModifier,
-                movementModifier + other.movementModifier);
+    public void add(TerrainModifier other) {
+        this.attackModifier += other.attackModifier;
+        this.defenseModifier += other.defenseModifier;
+        this.movementModifier += other.movementModifier;
+        // return new TerrainModifier(terrain, attackModifier + other.attackModifier,
+        //         defenseModifier + other.defenseModifier,
+        //         movementModifier + other.movementModifier);
     }
 
-    public TerrainModifier divide(double divider){
-        return new TerrainModifier(terrain,attackModifier/divider, defenseModifier/divider, movementModifier/divider);
+    public TerrainModifier divide(double divider) {
+        return new TerrainModifier(terrain, attackModifier / divider, defenseModifier / divider,
+                movementModifier / divider);
     }
 }

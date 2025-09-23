@@ -67,6 +67,9 @@ public class TechParser extends Parser {
 
             String key = parts[0].trim();
             String value = parts[1].trim();
+            if (key.equals("allow")) {
+                    return null;
+            }
             if (value.equals("{")) {
                 if (SKIP_BLOCKS.contains(key)) {
                     int depth = 1;
@@ -130,10 +133,8 @@ public class TechParser extends Parser {
                             nextLineParts = nextLine.split("=", 2);
                             if (nextLineParts[0].trim().equals("attack")) {
                                 attack = Double.parseDouble(nextLineParts[1].trim());
-                                System.out.println("modified attack, "+id+", "+key+", "+nextLineParts[1].trim());
                             } else if (nextLineParts[0].trim().equals("defense") || nextLineParts[0].trim().equals("defence")) {
                                 defense = Double.parseDouble(nextLineParts[1].trim());
-                                System.out.println("modified defense, "+id+", "+key+", "+nextLineParts[1].trim());
                             } else {
                                 movement = Double.parseDouble(nextLineParts[1].trim());
                             }
